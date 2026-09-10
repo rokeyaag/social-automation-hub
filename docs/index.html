@@ -26,6 +26,7 @@
               600: '#4f46e5',
             },
             dark: {
+              950: '#030712',
               900: '#070b14',
               850: '#0b1120',
               800: '#0f172a',
@@ -45,7 +46,7 @@
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;700;800&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
 
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -61,24 +62,21 @@
     }
     /* Glassmorphism */
     .glass-panel {
-      background: rgba(15, 23, 42, 0.75);
+      background: rgba(15, 23, 42, 0.8);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
       border: 1px solid rgba(255, 255, 255, 0.08);
     }
     .glass-card {
-      background: rgba(21, 32, 59, 0.6);
+      background: rgba(21, 32, 59, 0.65);
       backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.08);
     }
     .glass-card:hover {
-      border-color: rgba(6, 182, 212, 0.3);
+      border-color: rgba(6, 182, 212, 0.35);
     }
     .glow-cyan {
       box-shadow: 0 0 35px -5px rgba(6, 182, 212, 0.25);
-    }
-    .glow-indigo {
-      box-shadow: 0 0 35px -5px rgba(99, 102, 241, 0.25);
     }
     /* Checkerboard for transparent canvas */
     .checkerboard {
@@ -89,6 +87,12 @@
       background-size: 20px 20px;
       background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
       background-color: #0f172a;
+    }
+    /* Studio artboard grid */
+    .studio-workbench {
+      background-color: #050811;
+      background-image: radial-gradient(rgba(255, 255, 255, 0.08) 1.2px, transparent 1.2px);
+      background-size: 24px 24px;
     }
     /* Custom scrollbar */
     ::-webkit-scrollbar {
@@ -104,14 +108,6 @@
     }
     ::-webkit-scrollbar-thumb:hover {
       background: #334155;
-    }
-    /* Pulse animation */
-    @keyframes pulse-slow {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.85; transform: scale(1.02); }
-    }
-    .pulse-glow {
-      animation: pulse-slow 3s infinite ease-in-out;
     }
   </style>
 </head>
@@ -175,7 +171,6 @@
 
   <!-- Hero Section -->
   <section class="relative z-10 pt-10 pb-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto text-center">
-    <!-- Top Pill -->
     <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand-500/10 border border-brand-500/30 text-brand-400 text-xs font-semibold uppercase tracking-wider mb-5 glow-cyan">
       <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
       Interactive Live Production Demo
@@ -213,16 +208,18 @@
   <!-- Main Content Tabs / Interactive Area -->
   <main class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-grow space-y-12">
 
-    <!-- SECTION 1: AI PHOTO STUDIO & BACKGROUND REMOVAL -->
+    <!-- ============================================================= -->
+    <!-- SECTION 1: AI PHOTO STUDIO & BACKGROUND REMOVAL                -->
+    <!-- ============================================================= -->
     <section id="studio-section" class="scroll-mt-20">
       <div class="flex flex-col md:flex-row md:items-end justify-between mb-6 gap-4">
         <div>
           <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-brand-400">
             <i class="fa-solid fa-wand-magic-sparkles"></i>
-            <span>Module 1 &bull; Rembg AI Engine</span>
+            <span>Module 1 &bull; Rembg AI Studio</span>
           </div>
-          <h2 class="text-2xl sm:text-3xl font-bold text-white tracking-tight mt-1">Interactive AI Photo Studio</h2>
-          <p class="text-sm text-slate-400">Select a subject, remove background with 1-click AI, pick backdrops, and snap to floor.</p>
+          <h2 class="text-2xl sm:text-3xl font-bold text-white tracking-tight mt-1">Professional AI Photo &amp; Banner Studio</h2>
+          <p class="text-sm text-slate-400">Studio lighting, floor-level bottom snapping, executive branding overlays, and social aspect ratios.</p>
         </div>
         <div class="flex items-center gap-2">
           <button id="btn-send-to-composer" class="px-4 py-2 text-xs sm:text-sm font-semibold rounded-lg bg-gradient-to-r from-brand-500 to-accent-500 hover:from-brand-400 hover:to-accent-400 text-white shadow-lg shadow-brand-500/20 transition-all flex items-center gap-2">
@@ -252,7 +249,7 @@
             <div class="grid grid-cols-3 gap-2">
               <button class="preset-btn active border-2 border-brand-500 bg-dark-750 p-2 rounded-xl text-center transition-all hover:bg-dark-700" data-preset="portrait">
                 <div class="w-10 h-10 mx-auto rounded-full overflow-hidden border border-brand-400/50 mb-1">
-                  <img src="profile.jpg" alt="Founder Portrait" class="w-full h-full object-cover" onerror="this.src='images/ai.jpg'">
+                  <img src="profile_trimmed.png" alt="Founder Portrait" class="w-full h-full object-cover" onerror="this.src='profile.jpg'">
                 </div>
                 <span class="text-xs font-medium text-slate-200 block truncate">Founder</span>
               </button>
@@ -287,7 +284,7 @@
             <div class="flex items-center justify-between">
               <span class="text-sm font-semibold text-white flex items-center gap-2">
                 <i class="fa-solid fa-wand-magic-sparkles text-accent-500"></i>
-                2. AI Background Removal
+                2. AI Background &amp; Studio Lighting
               </span>
               <div class="flex items-center gap-2">
                 <span id="ai-status-badge" class="text-[11px] font-semibold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">AI Cutout ON</span>
@@ -298,7 +295,7 @@
             <div class="flex items-center justify-between p-3 rounded-xl bg-dark-800 border border-white/5">
               <div class="text-xs">
                 <span class="font-medium text-slate-200 block">Remove Background with AI</span>
-                <span class="text-[11px] text-slate-400">Sub-second neural matting</span>
+                <span class="text-[11px] text-slate-400">Neural alpha matting &amp; edge smoothing</span>
               </div>
               <label class="relative inline-flex items-center cursor-pointer">
                 <input type="checkbox" id="toggle-bg-removal" class="sr-only peer" checked>
@@ -308,35 +305,35 @@
 
             <!-- Backdrop Preset Chooser -->
             <div>
-              <label class="text-xs font-semibold text-slate-300 block mb-2">Select Studio Backdrop:</label>
+              <label class="text-xs font-semibold text-slate-300 block mb-2">Select Studio Lighting &amp; Backdrop:</label>
               <div class="grid grid-cols-4 gap-2" id="backdrop-selector">
-                <button class="backdrop-option active border-2 border-brand-400 p-2 rounded-xl text-center bg-dark-800 hover:bg-dark-700 transition-all flex flex-col items-center justify-center gap-1" data-bg="transparent">
+                <button class="backdrop-option border border-white/10 p-2 rounded-xl text-center bg-dark-800 hover:bg-dark-700 transition-all flex flex-col items-center justify-center gap-1" data-bg="transparent">
                   <div class="w-6 h-6 rounded-lg checkerboard border border-white/20"></div>
                   <span class="text-[10px] text-slate-300 truncate w-full">Transparent</span>
                 </button>
+                <button class="backdrop-option active border-2 border-brand-400 p-2 rounded-xl text-center bg-dark-800 hover:bg-dark-700 transition-all flex flex-col items-center justify-center gap-1" data-bg="sunset">
+                  <div class="w-6 h-6 rounded-lg bg-gradient-to-tr from-amber-500 via-rose-600 to-indigo-950 border border-white/20"></div>
+                  <span class="text-[10px] text-slate-300 truncate w-full">Sunset Glow</span>
+                </button>
                 <button class="backdrop-option border border-white/10 p-2 rounded-xl text-center bg-dark-800 hover:bg-dark-700 transition-all flex flex-col items-center justify-center gap-1" data-bg="midnight">
-                  <div class="w-6 h-6 rounded-lg bg-gradient-to-tr from-slate-950 via-indigo-950 to-cyan-900 border border-white/20"></div>
+                  <div class="w-6 h-6 rounded-lg bg-gradient-to-tr from-slate-950 via-indigo-900 to-cyan-700 border border-white/20"></div>
                   <span class="text-[10px] text-slate-300 truncate w-full">Midnight</span>
                 </button>
-                <button class="backdrop-option border border-white/10 p-2 rounded-xl text-center bg-dark-800 hover:bg-dark-700 transition-all flex flex-col items-center justify-center gap-1" data-bg="sunset">
-                  <div class="w-6 h-6 rounded-lg bg-gradient-to-tr from-amber-600 via-rose-600 to-indigo-900 border border-white/20"></div>
-                  <span class="text-[10px] text-slate-300 truncate w-full">Sunset</span>
-                </button>
                 <button class="backdrop-option border border-white/10 p-2 rounded-xl text-center bg-dark-800 hover:bg-dark-700 transition-all flex flex-col items-center justify-center gap-1" data-bg="emerald">
-                  <div class="w-6 h-6 rounded-lg bg-gradient-to-tr from-emerald-800 via-teal-900 to-slate-950 border border-white/20"></div>
+                  <div class="w-6 h-6 rounded-lg bg-gradient-to-tr from-emerald-700 via-teal-900 to-slate-950 border border-white/20"></div>
                   <span class="text-[10px] text-slate-300 truncate w-full">Emerald</span>
+                </button>
+                <button class="backdrop-option border border-white/10 p-2 rounded-xl text-center bg-dark-800 hover:bg-dark-700 transition-all flex flex-col items-center justify-center gap-1" data-bg="cyber">
+                  <div class="w-6 h-6 rounded-lg bg-gradient-to-tr from-cyan-500 via-purple-600 to-slate-950 border border-white/20"></div>
+                  <span class="text-[10px] text-slate-300 truncate w-full">Cyberpunk</span>
                 </button>
                 <button class="backdrop-option border border-white/10 p-2 rounded-xl text-center bg-dark-800 hover:bg-dark-700 transition-all flex flex-col items-center justify-center gap-1" data-bg="office">
                   <div class="w-6 h-6 rounded-lg bg-gradient-to-tr from-blue-900 via-slate-800 to-slate-900 border border-white/20"></div>
                   <span class="text-[10px] text-slate-300 truncate w-full">Tech Office</span>
                 </button>
                 <button class="backdrop-option border border-white/10 p-2 rounded-xl text-center bg-dark-800 hover:bg-dark-700 transition-all flex flex-col items-center justify-center gap-1" data-bg="studio">
-                  <div class="w-6 h-6 rounded-lg bg-gradient-to-b from-slate-700 to-slate-950 border border-white/20"></div>
+                  <div class="w-6 h-6 rounded-lg bg-gradient-to-b from-slate-600 to-slate-950 border border-white/20"></div>
                   <span class="text-[10px] text-slate-300 truncate w-full">Spotlight</span>
-                </button>
-                <button class="backdrop-option border border-white/10 p-2 rounded-xl text-center bg-dark-800 hover:bg-dark-700 transition-all flex flex-col items-center justify-center gap-1" data-bg="gradient-cyan">
-                  <div class="w-6 h-6 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 border border-white/20"></div>
-                  <span class="text-[10px] text-slate-300 truncate w-full">Vibrant</span>
                 </button>
                 <button class="backdrop-option border border-white/10 p-2 rounded-xl text-center bg-dark-800 hover:bg-dark-700 transition-all flex flex-col items-center justify-center gap-1 relative overflow-hidden" data-bg="custom">
                   <input type="color" id="custom-color-picker" value="#0f172a" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full">
@@ -360,37 +357,69 @@
               </button>
             </div>
 
+            <!-- Position Presets -->
+            <div class="grid grid-cols-3 gap-2">
+              <button id="preset-exec" class="py-1.5 px-2 rounded-lg bg-dark-800 hover:bg-brand-500/20 text-xs font-medium text-slate-200 border border-white/10 transition-all text-center">
+                👔 Executive
+              </button>
+              <button id="preset-speaker" class="py-1.5 px-2 rounded-lg bg-dark-800 hover:bg-brand-500/20 text-xs font-medium text-slate-200 border border-white/10 transition-all text-center">
+                📢 Speaker (Right)
+              </button>
+              <button id="preset-center" class="py-1.5 px-2 rounded-lg bg-dark-800 hover:bg-brand-500/20 text-xs font-medium text-slate-200 border border-white/10 transition-all text-center">
+                🎯 Center Stage
+              </button>
+            </div>
+
             <!-- Sliders -->
-            <div class="space-y-3">
+            <div class="space-y-3 pt-1">
               <div>
                 <div class="flex justify-between text-xs text-slate-300 mb-1">
                   <span>Scale / Zoom</span>
-                  <span id="label-scale" class="font-mono text-brand-400">100%</span>
+                  <span id="label-scale" class="font-mono text-brand-400 font-semibold">135%</span>
                 </div>
-                <input type="range" id="slider-scale" min="50" max="150" value="100" class="w-full accent-brand-500 cursor-pointer">
+                <input type="range" id="slider-scale" min="50" max="220" value="135" class="w-full accent-brand-500 cursor-pointer">
               </div>
 
               <div>
                 <div class="flex justify-between text-xs text-slate-300 mb-1">
                   <span>Vertical Position (Y)</span>
-                  <span id="label-offset-y" class="font-mono text-brand-400">0px</span>
+                  <span id="label-offset-y" class="font-mono text-brand-400 font-semibold">50px</span>
                 </div>
-                <input type="range" id="slider-offset-y" min="-120" max="120" value="0" class="w-full accent-brand-500 cursor-pointer">
+                <input type="range" id="slider-offset-y" min="-250" max="250" value="50" class="w-full accent-brand-500 cursor-pointer">
+              </div>
+
+              <div>
+                <div class="flex justify-between text-xs text-slate-300 mb-1">
+                  <span>Horizontal Position (X)</span>
+                  <span id="label-offset-x" class="font-mono text-brand-400 font-semibold">0px</span>
+                </div>
+                <input type="range" id="slider-offset-x" min="-250" max="250" value="0" class="w-full accent-brand-500 cursor-pointer">
               </div>
             </div>
 
-            <!-- Quick Action Buttons -->
-            <div class="grid grid-cols-3 gap-2 pt-2 border-t border-white/5">
-              <button id="btn-flip-h" class="py-1.5 px-2 rounded-lg bg-dark-800 hover:bg-dark-750 text-xs text-slate-300 hover:text-white border border-white/5 transition-all flex items-center justify-center gap-1">
-                <i class="fa-solid fa-arrows-left-right text-xs"></i> Flip H
-              </button>
-              <button id="btn-center" class="py-1.5 px-2 rounded-lg bg-dark-800 hover:bg-dark-750 text-xs text-slate-300 hover:text-white border border-white/5 transition-all flex items-center justify-center gap-1">
-                <i class="fa-solid fa-crosshairs text-xs"></i> Center
-              </button>
-              <button id="btn-reset-transform" class="py-1.5 px-2 rounded-lg bg-dark-800 hover:bg-dark-750 text-xs text-slate-300 hover:text-white border border-white/5 transition-all flex items-center justify-center gap-1">
-                <i class="fa-solid fa-rotate-left text-xs"></i> Reset
-              </button>
+            <!-- Overlay & Flip Controls -->
+            <div class="pt-3 border-t border-white/5 space-y-2">
+              <div class="flex items-center justify-between p-2.5 rounded-xl bg-dark-800 border border-white/5">
+                <div class="text-xs">
+                  <span class="font-semibold text-slate-200 block">Executive Branding Overlay</span>
+                  <span class="text-[10px] text-slate-400">Add founder title, badge &amp; accent bar</span>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer">
+                  <input type="checkbox" id="toggle-exec-overlay" class="sr-only peer">
+                  <div class="w-9 h-5 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-brand-500"></div>
+                </label>
+              </div>
+
+              <div class="grid grid-cols-2 gap-2">
+                <button id="btn-flip-h" class="py-1.5 px-2 rounded-lg bg-dark-800 hover:bg-dark-750 text-xs text-slate-300 hover:text-white border border-white/5 transition-all flex items-center justify-center gap-1.5">
+                  <i class="fa-solid fa-arrows-left-right text-xs"></i> Flip Horizontal
+                </button>
+                <button id="btn-reset-transform" class="py-1.5 px-2 rounded-lg bg-dark-800 hover:bg-dark-750 text-xs text-slate-300 hover:text-white border border-white/5 transition-all flex items-center justify-center gap-1.5">
+                  <i class="fa-solid fa-rotate-left text-xs"></i> Reset Values
+                </button>
+              </div>
             </div>
+
           </div>
 
         </div>
@@ -400,34 +429,39 @@
           <div class="glass-card rounded-2xl p-5 flex flex-col flex-grow relative overflow-hidden border border-white/10 shadow-2xl">
             
             <!-- Canvas Header Toolbar -->
-            <div class="flex items-center justify-between pb-3 border-b border-white/10 mb-4">
-              <div class="flex items-center gap-2">
-                <span class="w-3 h-3 rounded-full bg-red-500/80"></span>
-                <span class="w-3 h-3 rounded-full bg-amber-500/80"></span>
-                <span class="w-3 h-3 rounded-full bg-emerald-500/80"></span>
-                <span class="text-xs text-slate-400 font-mono ml-2">Studio Viewport &bull; 800 x 600</span>
+            <div class="flex flex-wrap items-center justify-between pb-3 border-b border-white/10 mb-4 gap-3">
+              <!-- Aspect Ratio Switcher -->
+              <div class="flex items-center gap-1 p-1 rounded-xl bg-dark-800 border border-white/5 text-xs">
+                <button class="aspect-btn active px-3 py-1 rounded-lg bg-brand-500 text-white font-semibold transition-all" data-w="960" data-h="540" data-label="16:9 Banner">
+                  16:9 Banner
+                </button>
+                <button class="aspect-btn px-3 py-1 rounded-lg text-slate-400 hover:text-white font-medium transition-all" data-w="800" data-h="800" data-label="1:1 Square">
+                  1:1 Square
+                </button>
+                <button class="aspect-btn px-3 py-1 rounded-lg text-slate-400 hover:text-white font-medium transition-all" data-w="800" data-h="600" data-label="4:3 Classic">
+                  4:3 Slide
+                </button>
               </div>
+
+              <!-- Download Button -->
               <div class="flex items-center gap-2">
-                <button id="btn-download-studio" class="px-3 py-1 text-xs font-medium rounded-lg bg-dark-750 hover:bg-dark-700 text-slate-300 hover:text-white border border-white/10 transition-all flex items-center gap-1.5">
+                <button id="btn-download-studio" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-dark-750 hover:bg-dark-700 text-slate-200 hover:text-white border border-white/10 transition-all flex items-center gap-1.5 shadow-sm">
                   <i class="fa-solid fa-download text-xs"></i>
-                  <span>Download Image</span>
+                  <span>Download High-Res</span>
                 </button>
               </div>
             </div>
 
-            <!-- Canvas Viewport Frame -->
-            <div class="relative flex-grow flex items-center justify-center rounded-xl overflow-hidden min-h-[380px] sm:min-h-[460px] p-2 bg-dark-900 border border-white/5">
+            <!-- Studio Artboard Frame -->
+            <div class="relative flex-grow flex items-center justify-center rounded-2xl overflow-hidden min-h-[420px] sm:min-h-[500px] p-4 studio-workbench border border-white/10 shadow-inner">
               
-              <!-- Checkerboard / Active Backdrop Container -->
-              <div id="canvas-backdrop" class="absolute inset-0 checkerboard transition-all duration-300"></div>
-
-              <!-- HTML5 Canvas for Export & Precision Rendering -->
-              <canvas id="studio-canvas" width="800" height="600" class="relative z-10 max-w-full max-h-[440px] object-contain rounded-lg shadow-2xl"></canvas>
+              <!-- HTML5 Canvas -->
+              <canvas id="studio-canvas" width="960" height="540" class="relative z-10 max-w-full max-h-[480px] object-contain rounded-2xl shadow-2xl transition-all duration-300 border border-white/15"></canvas>
 
               <!-- Floating Canvas Badge -->
-              <div class="absolute bottom-4 right-4 z-20 px-3 py-1 rounded-lg bg-dark-900/80 backdrop-blur-md border border-white/10 text-[11px] font-mono text-slate-300 flex items-center gap-2 pointer-events-none">
-                <span class="w-2 h-2 rounded-full bg-brand-400 animate-pulse"></span>
-                <span id="canvas-resolution-label">800&times;600 PNG &bull; Rembg AI Clean</span>
+              <div class="absolute bottom-4 right-4 z-20 px-3 py-1 rounded-lg bg-dark-900/90 backdrop-blur-md border border-white/10 text-[11px] font-mono text-slate-300 flex items-center gap-2 pointer-events-none shadow-lg">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span id="canvas-resolution-label">960&times;540 &bull; Studio Lighting Master</span>
               </div>
 
             </div>
@@ -435,10 +469,10 @@
             <!-- Canvas Bottom Hint -->
             <div class="pt-4 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400 gap-2">
               <span class="flex items-center gap-1.5">
-                <i class="fa-solid fa-circle-info text-brand-400"></i>
-                Subject edge detection, Alpha matting &amp; shadow compositing running client-side.
+                <i class="fa-solid fa-circle-check text-emerald-400"></i>
+                Subject snapped flush to floor with multi-stop radial studio lighting &amp; contact shadow.
               </span>
-              <span class="font-mono text-slate-500">Latency: <span class="text-emerald-400">0.42ms</span></span>
+              <span class="font-mono text-slate-500">Render: <span class="text-emerald-400">60 FPS</span></span>
             </div>
 
           </div>
@@ -447,7 +481,9 @@
       </div>
     </section>
 
-    <!-- SECTION 2: AUTO-PUBLISHER COMPOSER & LIVE FEED MOCKUPS -->
+    <!-- ============================================================= -->
+    <!-- SECTION 2: AUTO-PUBLISHER COMPOSER & LIVE FEED MOCKUPS       -->
+    <!-- ============================================================= -->
     <section id="composer-section" class="scroll-mt-20">
       <div class="mb-6">
         <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-accent-400">
@@ -537,8 +573,8 @@ Automate multi-channel distribution to Facebook Pages and LinkedIn in millisecon
             <div>
               <span class="text-xs font-semibold text-slate-300 uppercase tracking-wider block mb-1.5">Attached Image Asset:</span>
               <div class="flex items-center gap-3 p-2.5 rounded-xl bg-dark-800 border border-white/5">
-                <div class="w-14 h-14 rounded-lg bg-dark-900 border border-white/10 overflow-hidden flex-shrink-0 flex items-center justify-center checkerboard">
-                  <img id="composer-thumb-img" src="images/socialpulse.svg" alt="Preview" class="w-full h-full object-contain">
+                <div class="w-16 h-12 rounded-lg bg-dark-900 border border-white/10 overflow-hidden flex-shrink-0 flex items-center justify-center">
+                  <img id="composer-thumb-img" src="images/socialpulse.svg" alt="Preview" class="w-full h-full object-cover">
                 </div>
                 <div class="flex-grow min-w-0">
                   <div class="text-xs font-semibold text-slate-200 truncate" id="composer-asset-name">socialpulse_studio_export.png</div>
@@ -636,7 +672,7 @@ Automate multi-channel distribution to Facebook Pages and LinkedIn in millisecon
             </div>
 
             <!-- FB Media Image -->
-            <div class="w-full bg-[#18191a] flex items-center justify-center overflow-hidden max-h-[380px]">
+            <div class="w-full bg-[#18191a] flex items-center justify-center overflow-hidden max-h-[400px]">
               <img id="fb-preview-img" src="images/socialpulse.svg" alt="Social Post" class="w-full h-auto object-cover">
             </div>
 
@@ -677,7 +713,7 @@ Automate multi-channel distribution to Facebook Pages and LinkedIn in millisecon
             <!-- LI Header -->
             <div class="p-4 flex items-start justify-between">
               <div class="flex items-center gap-3">
-                <img src="profile.jpg" alt="Lutfor Rahman" class="w-12 h-12 rounded-full object-cover border border-white/20" onerror="this.src='images/ai.jpg'">
+                <img src="profile_trimmed.png" alt="Lutfor Rahman" class="w-12 h-12 rounded-full object-cover border border-white/20" onerror="this.src='profile.jpg'">
                 <div>
                   <div class="flex items-center gap-1.5">
                     <span class="font-bold text-sm text-white hover:text-sky-400 cursor-pointer">Lutfor Rahman</span>
@@ -703,7 +739,7 @@ Automate multi-channel distribution to Facebook Pages and LinkedIn in millisecon
             </div>
 
             <!-- LI Media Image -->
-            <div class="w-full bg-[#12161a] flex items-center justify-center overflow-hidden max-h-[380px]">
+            <div class="w-full bg-[#12161a] flex items-center justify-center overflow-hidden max-h-[400px]">
               <img id="li-preview-img" src="images/socialpulse.svg" alt="LinkedIn Post Asset" class="w-full h-auto object-cover">
             </div>
 
@@ -767,7 +803,9 @@ Automate multi-channel distribution to Facebook Pages and LinkedIn in millisecon
       </div>
     </section>
 
-    <!-- SECTION 3: APSCHEDULER BACKGROUND QUEUE & DAEMON -->
+    <!-- ============================================================= -->
+    <!-- SECTION 3: APSCHEDULER BACKGROUND QUEUE & DAEMON             -->
+    <!-- ============================================================= -->
     <section id="scheduler-section" class="scroll-mt-20">
       <div class="mb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
@@ -858,7 +896,9 @@ Automate multi-channel distribution to Facebook Pages and LinkedIn in millisecon
       </div>
     </section>
 
-    <!-- SECTION 4: ARCHITECTURE & SECURITY DEEP DIVE -->
+    <!-- ============================================================= -->
+    <!-- SECTION 4: ARCHITECTURE & SECURITY DEEP DIVE                 -->
+    <!-- ============================================================= -->
     <section id="architecture-section" class="scroll-mt-20">
       <div class="mb-6">
         <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-emerald-400">
@@ -948,12 +988,15 @@ Automate multi-channel distribution to Facebook Pages and LinkedIn in millisecon
     const state = {
       preset: 'portrait',
       bgRemovalActive: true,
-      currentBackdrop: 'transparent',
+      currentBackdrop: 'sunset',
       customColor: '#0f172a',
-      scale: 100,
-      offsetY: 0,
+      scale: 135,
+      offsetY: 50,
       offsetX: 0,
       flipH: false,
+      executiveOverlay: false,
+      aspectWidth: 960,
+      aspectHeight: 540,
       userUploadedSrc: null,
       postText: document.getElementById('post-text-input').value,
       channels: { fb: true, li: true },
@@ -963,15 +1006,16 @@ Automate multi-channel distribution to Facebook Pages and LinkedIn in millisecon
     // DOM Elements
     const canvas = document.getElementById('studio-canvas');
     const ctx = canvas.getContext('2d');
-    const canvasBackdrop = document.getElementById('canvas-backdrop');
     const toggleBg = document.getElementById('toggle-bg-removal');
+    const toggleExecOverlay = document.getElementById('toggle-exec-overlay');
     const aiStatusBadge = document.getElementById('ai-status-badge');
     const sliderScale = document.getElementById('slider-scale');
     const labelScale = document.getElementById('label-scale');
     const sliderOffsetY = document.getElementById('slider-offset-y');
     const labelOffsetY = document.getElementById('label-offset-y');
+    const sliderOffsetX = document.getElementById('slider-offset-x');
+    const labelOffsetX = document.getElementById('label-offset-x');
     const btnFlipH = document.getElementById('btn-flip-h');
-    const btnCenter = document.getElementById('btn-center');
     const btnSnapBottom = document.getElementById('btn-snap-bottom');
     const btnReset = document.getElementById('btn-reset-transform');
     const btnDownload = document.getElementById('btn-download-studio');
@@ -991,37 +1035,33 @@ Automate multi-channel distribution to Facebook Pages and LinkedIn in millisecon
 
     // Preload image assets
     const images = {
-      portrait: new Image(),
-      watch: new Image(),
-      sneaker: new Image()
+      portraitTrimmed: new Image(),
+      portraitOriginal: new Image()
     };
-    images.portrait.src = 'profile.jpg';
-    images.portrait.onerror = () => { images.portrait.src = 'images/ai.jpg'; };
+    images.portraitTrimmed.src = 'profile_trimmed.png';
+    images.portraitTrimmed.onerror = () => { images.portraitTrimmed.src = 'profile.jpg'; };
+    images.portraitOriginal.src = 'profile.jpg';
 
-    // Draw Vector Smart Watch fallback
+    // Draw Vector Smart Watch
     function createWatchCanvas() {
       const c = document.createElement('canvas');
       c.width = 400; c.height = 400;
       const x = c.getContext('2d');
-      // Watch strap
       x.fillStyle = '#1e293b';
       x.roundRect(140, 30, 120, 340, 20);
       x.fill();
-      // Watch case
       x.fillStyle = '#0f172a';
       x.strokeStyle = '#06b6d4';
       x.lineWidth = 8;
       x.roundRect(110, 100, 180, 200, 45);
       x.fill();
       x.stroke();
-      // Watch screen glow
       const g = x.createRadialGradient(200, 200, 10, 200, 200, 90);
       g.addColorStop(0, '#0e7490');
       g.addColorStop(1, '#020617');
       x.fillStyle = g;
       x.roundRect(125, 115, 150, 170, 35);
       x.fill();
-      // Watch dial UI
       x.fillStyle = '#22d3ee';
       x.font = 'bold 38px Inter, sans-serif';
       x.textAlign = 'center';
@@ -1034,17 +1074,15 @@ Automate multi-channel distribution to Facebook Pages and LinkedIn in millisecon
       return c;
     }
 
-    // Draw Vector Sneaker fallback
+    // Draw Vector Sneaker
     function createSneakerCanvas() {
       const c = document.createElement('canvas');
       c.width = 460; c.height = 320;
       const x = c.getContext('2d');
-      // Sole
       x.fillStyle = '#f8fafc';
       x.beginPath();
       x.ellipse(230, 240, 180, 35, 0, 0, Math.PI * 2);
       x.fill();
-      // Upper body
       const g = x.createLinearGradient(60, 120, 380, 220);
       g.addColorStop(0, '#06b6d4');
       g.addColorStop(0.5, '#6366f1');
@@ -1058,7 +1096,6 @@ Automate multi-channel distribution to Facebook Pages and LinkedIn in millisecon
       x.lineTo(80, 240);
       x.closePath();
       x.fill();
-      // Accent swoosh
       x.strokeStyle = '#ffffff';
       x.lineWidth = 10;
       x.beginPath();
@@ -1071,72 +1108,138 @@ Automate multi-channel distribution to Facebook Pages and LinkedIn in millisecon
     const watchAsset = createWatchCanvas();
     const sneakerAsset = createSneakerCanvas();
 
+    // Calculate Exact Snap to Bottom
+    function getSnapToBottomOffset() {
+      const scaleFactor = state.scale / 100;
+      let subjectHeight = 333 * scaleFactor;
+      if (state.preset === 'portrait') {
+        const img = images.portraitTrimmed;
+        if (img.complete && img.naturalHeight > 0) {
+          const w = 355 * scaleFactor;
+          subjectHeight = (img.naturalHeight / img.naturalWidth) * w;
+        }
+      } else if (state.preset === 'watch') {
+        subjectHeight = 320 * scaleFactor;
+      } else if (state.preset === 'sneaker') {
+        subjectHeight = (320 / 460) * (420 * scaleFactor);
+      } else if (state.preset === 'user' && state.userUploadedImg) {
+        const img = state.userUploadedImg;
+        const maxDim = 380 * scaleFactor;
+        const aspect = img.width / img.height;
+        subjectHeight = aspect >= 1 ? maxDim / aspect : maxDim;
+      }
+      return Math.round((canvas.height - subjectHeight) / 2);
+    }
+
     // Render Canvas
     function renderCanvas() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // 1. Draw Backdrop if not transparent
-      if (state.currentBackdrop === 'midnight') {
-        const g = ctx.createRadialGradient(400, 300, 50, 400, 300, 500);
-        g.addColorStop(0, '#1e1b4b');
-        g.addColorStop(0.5, '#0f172a');
+      // 1. Draw Backdrop
+      if (state.currentBackdrop === 'sunset') {
+        // Luxury warm studio portrait spotlight
+        ctx.fillStyle = '#180410';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        const spotX = (canvas.width / 2) + (state.offsetX * 0.3);
+        const spotY = (canvas.height / 2) + (state.offsetY * 0.2) - 20;
+        const spotR = Math.max(canvas.width, canvas.height) * 0.72;
+
+        const g = ctx.createRadialGradient(spotX, spotY, 20, spotX, spotY, spotR);
+        g.addColorStop(0, '#ff7a38');      // warm amber glow
+        g.addColorStop(0.32, '#e11d48');   // deep rose coral
+        g.addColorStop(0.68, '#881337');   // luxury burgundy
+        g.addColorStop(1, '#180410');      // dark plum obsidian
+        ctx.fillStyle = g;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Dark perimeter vignette
+        const vignette = ctx.createRadialGradient(canvas.width/2, canvas.height/2, canvas.width*0.35, canvas.width/2, canvas.height/2, canvas.width*0.75);
+        vignette.addColorStop(0, 'rgba(0, 0, 0, 0)');
+        vignette.addColorStop(1, 'rgba(0, 0, 0, 0.48)');
+        ctx.fillStyle = vignette;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      } else if (state.currentBackdrop === 'midnight') {
+        ctx.fillStyle = '#020617';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        const spotX = (canvas.width / 2) + (state.offsetX * 0.3);
+        const spotY = (canvas.height / 2) - 10;
+        const g = ctx.createRadialGradient(spotX, spotY, 30, spotX, spotY, canvas.width * 0.75);
+        g.addColorStop(0, '#2563eb');
+        g.addColorStop(0.4, '#1e1b4b');
+        g.addColorStop(0.75, '#0f172a');
         g.addColorStop(1, '#020617');
         ctx.fillStyle = g;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
-      } else if (state.currentBackdrop === 'sunset') {
-        const g = ctx.createLinearGradient(0, 0, 800, 600);
-        g.addColorStop(0, '#ea580c');
-        g.addColorStop(0.5, '#be185d');
-        g.addColorStop(1, '#311042');
-        ctx.fillStyle = g;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
       } else if (state.currentBackdrop === 'emerald') {
-        const g = ctx.createLinearGradient(0, 0, 800, 600);
-        g.addColorStop(0, '#047857');
-        g.addColorStop(0.6, '#0f3a38');
-        g.addColorStop(1, '#021817');
+        ctx.fillStyle = '#011716';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        const spotX = (canvas.width / 2) + (state.offsetX * 0.3);
+        const spotY = (canvas.height / 2) - 10;
+        const g = ctx.createRadialGradient(spotX, spotY, 30, spotX, spotY, canvas.width * 0.75);
+        g.addColorStop(0, '#059669');
+        g.addColorStop(0.4, '#0f4f46');
+        g.addColorStop(0.8, '#03201d');
+        g.addColorStop(1, '#011716');
         ctx.fillStyle = g;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      } else if (state.currentBackdrop === 'cyber') {
+        ctx.fillStyle = '#050814';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Dual neon glows
+        const g1 = ctx.createRadialGradient(canvas.width * 0.25, canvas.height * 0.4, 10, canvas.width * 0.25, canvas.height * 0.4, 380);
+        g1.addColorStop(0, 'rgba(6, 182, 212, 0.45)');
+        g1.addColorStop(1, 'rgba(6, 182, 212, 0)');
+        ctx.fillStyle = g1;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        const g2 = ctx.createRadialGradient(canvas.width * 0.75, canvas.height * 0.5, 10, canvas.width * 0.75, canvas.height * 0.5, 420);
+        g2.addColorStop(0, 'rgba(168, 85, 247, 0.42)');
+        g2.addColorStop(1, 'rgba(168, 85, 247, 0)');
+        ctx.fillStyle = g2;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
       } else if (state.currentBackdrop === 'office') {
-        const g = ctx.createLinearGradient(0, 0, 800, 600);
+        const g = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
         g.addColorStop(0, '#1e293b');
         g.addColorStop(0.5, '#0f172a');
         g.addColorStop(1, '#020617');
         ctx.fillStyle = g;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
-        // Soft bokeh spots
-        ctx.fillStyle = 'rgba(6, 182, 212, 0.08)';
-        ctx.beginPath(); ctx.arc(180, 150, 120, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = 'rgba(99, 102, 241, 0.08)';
-        ctx.beginPath(); ctx.arc(650, 220, 150, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = 'rgba(6, 182, 212, 0.12)';
+        ctx.beginPath(); ctx.arc(canvas.width * 0.25, canvas.height * 0.3, 140, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = 'rgba(99, 102, 241, 0.12)';
+        ctx.beginPath(); ctx.arc(canvas.width * 0.75, canvas.height * 0.45, 180, 0, Math.PI * 2); ctx.fill();
+
       } else if (state.currentBackdrop === 'studio') {
-        const g = ctx.createRadialGradient(400, 180, 20, 400, 300, 450);
+        const g = ctx.createRadialGradient(canvas.width / 2, canvas.height * 0.25, 20, canvas.width / 2, canvas.height * 0.5, canvas.height * 0.8);
         g.addColorStop(0, '#475569');
         g.addColorStop(0.5, '#1e293b');
-        g.addColorStop(1, '#090d16');
+        g.addColorStop(1, '#070b14');
         ctx.fillStyle = g;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
-      } else if (state.currentBackdrop === 'gradient-cyan') {
-        const g = ctx.createLinearGradient(0, 0, 800, 600);
-        g.addColorStop(0, '#0891b2');
-        g.addColorStop(1, '#2563eb');
-        ctx.fillStyle = g;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
       } else if (state.currentBackdrop === 'custom') {
         ctx.fillStyle = state.customColor;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
       }
 
-      // If background removal is turned OFF, draw a simulated realistic background behind subject
+      // If background removal is OFF, draw simulated original photo background
       if (!state.bgRemovalActive) {
         ctx.fillStyle = '#334155';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = '#64748b';
-        ctx.font = '16px Inter, sans-serif';
-        ctx.fillText('[Original Background Active]', 30, 40);
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = 'bold 16px Inter, sans-serif';
+        ctx.fillText('[Original Scene Background Active]', 30, 45);
       }
 
-      // 2. Draw Subject Image
+      // 2. Draw Subject Image with Contact Shadow
       ctx.save();
 
       const scaleFactor = state.scale / 100;
@@ -1148,28 +1251,18 @@ Automate multi-channel distribution to Facebook Pages and LinkedIn in millisecon
         ctx.scale(-1, 1);
       }
 
-      // Contact Drop Shadow
-      ctx.shadowColor = 'rgba(0, 0, 0, 0.55)';
-      ctx.shadowBlur = 30;
+      // Multi-layer Studio Contact Shadow
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.65)';
+      ctx.shadowBlur = 40;
       ctx.shadowOffsetY = 15;
+      ctx.shadowOffsetX = 0;
 
       if (state.preset === 'portrait') {
-        const img = images.portrait;
+        const img = state.bgRemovalActive ? images.portraitTrimmed : images.portraitOriginal;
         if (img.complete && img.naturalWidth > 0) {
-          const w = 340 * scaleFactor;
+          const w = 355 * scaleFactor;
           const h = (img.naturalHeight / img.naturalWidth) * w;
-          
-          if (state.bgRemovalActive) {
-            // Cutout mode: smooth circular or rounded portrait
-            ctx.save();
-            ctx.beginPath();
-            ctx.roundRect(-w/2, -h/2, w, h, 30);
-            ctx.clip();
-            ctx.drawImage(img, -w/2, -h/2, w, h);
-            ctx.restore();
-          } else {
-            ctx.drawImage(img, -w/2, -h/2, w, h);
-          }
+          ctx.drawImage(img, -w/2, -h/2, w, h);
         }
       } else if (state.preset === 'watch') {
         const w = 320 * scaleFactor;
@@ -1190,29 +1283,80 @@ Automate multi-channel distribution to Facebook Pages and LinkedIn in millisecon
 
       ctx.restore();
 
-      // Update sync thumbnails & previews
+      // 3. Optional Executive Branding Overlay
+      if (state.executiveOverlay) {
+        ctx.save();
+        // Lower third gradient shade
+        const hGrad = ctx.createLinearGradient(0, canvas.height - 140, 0, canvas.height);
+        hGrad.addColorStop(0, 'rgba(7, 11, 20, 0)');
+        hGrad.addColorStop(0.3, 'rgba(7, 11, 20, 0.7)');
+        hGrad.addColorStop(1, 'rgba(7, 11, 20, 0.95)');
+        ctx.fillStyle = hGrad;
+        ctx.fillRect(0, canvas.height - 140, canvas.width, 140);
+
+        // Glowing cyan accent line
+        ctx.strokeStyle = '#06b6d4';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(35, canvas.height - 85);
+        ctx.lineTo(160, canvas.height - 85);
+        ctx.stroke();
+
+        // Founder Name
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 26px "Plus Jakarta Sans", sans-serif';
+        ctx.fillText('LUTFOR RAHMAN', 35, canvas.height - 52);
+
+        // Subtitle
+        ctx.fillStyle = '#22d3ee';
+        ctx.font = '600 12px Inter, sans-serif';
+        ctx.fillText('AI ENGINEER &amp; FOUNDER • SOCIALPULSE HUB', 35, canvas.height - 28);
+
+        // Top studio badge
+        ctx.fillStyle = 'rgba(15, 23, 42, 0.75)';
+        ctx.beginPath();
+        ctx.roundRect(canvas.width - 200, 24, 175, 34, 12);
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        ctx.fillStyle = '#38bdf8';
+        ctx.font = 'bold 11px Inter, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('⚡ SOCIALPULSE STUDIO', canvas.width - 112, 45);
+
+        ctx.restore();
+      }
+
+      // Sync previews
       updatePreviews();
     }
 
-    // Update synced images across Social Feed Mockups & Composer
+    // Update previews
     function updatePreviews() {
       try {
         const dataUrl = canvas.toDataURL('image/png');
         fbPreviewImg.src = dataUrl;
         liPreviewImg.src = dataUrl;
         composerThumbImg.src = dataUrl;
-      } catch (e) {
-        // Fallback for security tainted canvas
-      }
+      } catch (e) {}
     }
 
-    // Re-render when portrait loads
-    images.portrait.onload = () => { renderCanvas(); };
+    // Preload triggers
+    images.portraitTrimmed.onload = () => { renderCanvas(); };
+    images.portraitOriginal.onload = () => { renderCanvas(); };
 
-    // Initial render
-    renderCanvas();
+    // Initial snap and render
+    setTimeout(() => {
+      const snapY = getSnapToBottomOffset();
+      state.offsetY = snapY;
+      sliderOffsetY.value = snapY;
+      labelOffsetY.textContent = snapY + 'px';
+      renderCanvas();
+    }, 100);
 
-    // Event Listeners: Presets
+    // Presets Click
     document.querySelectorAll('.preset-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('.preset-btn').forEach(b => {
@@ -1222,6 +1366,11 @@ Automate multi-channel distribution to Facebook Pages and LinkedIn in millisecon
         btn.classList.add('active', 'border-brand-500');
         btn.classList.remove('border-white/10');
         state.preset = btn.dataset.preset;
+
+        const snapY = getSnapToBottomOffset();
+        state.offsetY = snapY;
+        sliderOffsetY.value = snapY;
+        labelOffsetY.textContent = snapY + 'px';
         renderCanvas();
       });
     });
@@ -1237,6 +1386,11 @@ Automate multi-channel distribution to Facebook Pages and LinkedIn in millisecon
           state.userUploadedImg = userImg;
           state.preset = 'user';
           document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active', 'border-brand-500'));
+          
+          const snapY = getSnapToBottomOffset();
+          state.offsetY = snapY;
+          sliderOffsetY.value = snapY;
+          labelOffsetY.textContent = snapY + 'px';
           renderCanvas();
           showToast('Custom Image Loaded', 'Image ready for studio composition!');
         };
@@ -1258,6 +1412,15 @@ Automate multi-channel distribution to Facebook Pages and LinkedIn in millisecon
       renderCanvas();
     });
 
+    // Executive Overlay Toggle
+    toggleExecOverlay.addEventListener('change', () => {
+      state.executiveOverlay = toggleExecOverlay.checked;
+      renderCanvas();
+      if (state.executiveOverlay) {
+        showToast('Executive Branding Enabled', 'Title, role badge and glowing accent added to canvas.');
+      }
+    });
+
     // Backdrop Selectors
     document.querySelectorAll('.backdrop-option').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -1269,13 +1432,6 @@ Automate multi-channel distribution to Facebook Pages and LinkedIn in millisecon
         btn.classList.remove('border-white/10');
 
         state.currentBackdrop = btn.dataset.bg;
-        if (state.currentBackdrop === 'transparent') {
-          canvasBackdrop.className = 'absolute inset-0 checkerboard transition-all duration-300';
-          canvasBackdrop.style.background = '';
-        } else {
-          canvasBackdrop.className = 'absolute inset-0 transition-all duration-300';
-          canvasBackdrop.style.background = '#070b14';
-        }
         renderCanvas();
       });
     });
@@ -1290,7 +1446,88 @@ Automate multi-channel distribution to Facebook Pages and LinkedIn in millisecon
       renderCanvas();
     });
 
-    // Transform Sliders
+    // Aspect Ratio Buttons
+    document.querySelectorAll('.aspect-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.aspect-btn').forEach(b => {
+          b.classList.remove('active', 'bg-brand-500', 'text-white');
+          b.classList.add('text-slate-400');
+        });
+        btn.classList.add('active', 'bg-brand-500', 'text-white');
+        btn.classList.remove('text-slate-400');
+
+        const w = parseInt(btn.dataset.w);
+        const h = parseInt(btn.dataset.h);
+        canvas.width = w;
+        canvas.height = h;
+        document.getElementById('canvas-resolution-label').textContent = `${w}×${h} • Studio Master`;
+
+        const snapY = getSnapToBottomOffset();
+        state.offsetY = snapY;
+        sliderOffsetY.value = snapY;
+        labelOffsetY.textContent = snapY + 'px';
+        renderCanvas();
+      });
+    });
+
+    // Position Presets
+    document.getElementById('preset-exec').addEventListener('click', () => {
+      state.scale = 135;
+      sliderScale.value = 135;
+      labelScale.textContent = '135%';
+      state.offsetX = 0;
+      sliderOffsetX.value = 0;
+      labelOffsetX.textContent = '0px';
+
+      const snapY = getSnapToBottomOffset();
+      state.offsetY = snapY;
+      sliderOffsetY.value = snapY;
+      labelOffsetY.textContent = snapY + 'px';
+      renderCanvas();
+      showToast('Executive Preset Applied', 'Centered and aligned flush to bottom floor.');
+    });
+
+    document.getElementById('preset-speaker').addEventListener('click', () => {
+      state.scale = 135;
+      sliderScale.value = 135;
+      labelScale.textContent = '135%';
+      state.offsetX = 160;
+      sliderOffsetX.value = 160;
+      labelOffsetX.textContent = '160px';
+
+      const snapY = getSnapToBottomOffset();
+      state.offsetY = snapY;
+      sliderOffsetY.value = snapY;
+      labelOffsetY.textContent = snapY + 'px';
+      renderCanvas();
+      showToast('Keynote Speaker Preset', 'Shifted right to allow headline text space on left.');
+    });
+
+    document.getElementById('preset-center').addEventListener('click', () => {
+      state.scale = 100;
+      sliderScale.value = 100;
+      labelScale.textContent = '100%';
+      state.offsetX = 0;
+      sliderOffsetX.value = 0;
+      labelOffsetX.textContent = '0px';
+      state.offsetY = 0;
+      sliderOffsetY.value = 0;
+      labelOffsetY.textContent = '0px';
+      renderCanvas();
+      showToast('Center Stage Preset', 'Perfect geometric center.');
+    });
+
+    // Snap to Bottom Button
+    btnSnapBottom.addEventListener('click', () => {
+      const snapY = getSnapToBottomOffset();
+      state.offsetY = snapY;
+      sliderOffsetY.value = snapY;
+      labelOffsetY.textContent = snapY + 'px';
+      renderCanvas();
+      showToast('Smart Snap Applied', 'Torso aligned flush to bottom floor with zero floating gap.');
+    });
+
+    // Sliders
     sliderScale.addEventListener('input', (e) => {
       state.scale = parseInt(e.target.value);
       labelScale.textContent = state.scale + '%';
@@ -1303,60 +1540,52 @@ Automate multi-channel distribution to Facebook Pages and LinkedIn in millisecon
       renderCanvas();
     });
 
+    sliderOffsetX.addEventListener('input', (e) => {
+      state.offsetX = parseInt(e.target.value);
+      labelOffsetX.textContent = state.offsetX + 'px';
+      renderCanvas();
+    });
+
     btnFlipH.addEventListener('click', () => {
       state.flipH = !state.flipH;
       renderCanvas();
     });
 
-    btnCenter.addEventListener('click', () => {
-      state.offsetX = 0;
-      state.offsetY = 0;
-      sliderOffsetY.value = 0;
-      labelOffsetY.textContent = '0px';
-      renderCanvas();
-    });
-
-    btnSnapBottom.addEventListener('click', () => {
-      // Calculate snap to bottom
-      state.offsetY = 85;
-      sliderOffsetY.value = 85;
-      labelOffsetY.textContent = '85px';
-      renderCanvas();
-      showToast('Smart Snap Applied', 'Subject aligned to floor level with natural contact shadow.');
-    });
-
     btnReset.addEventListener('click', () => {
-      state.scale = 100;
+      state.scale = 135;
       state.offsetX = 0;
-      state.offsetY = 0;
       state.flipH = false;
-      sliderScale.value = 100;
-      sliderOffsetY.value = 0;
-      labelScale.textContent = '100%';
-      labelOffsetY.textContent = '0px';
+      sliderScale.value = 135;
+      sliderOffsetX.value = 0;
+      labelScale.textContent = '135%';
+      labelOffsetX.textContent = '0px';
+      const snapY = getSnapToBottomOffset();
+      state.offsetY = snapY;
+      sliderOffsetY.value = snapY;
+      labelOffsetY.textContent = snapY + 'px';
       renderCanvas();
     });
 
     // Download Image
     btnDownload.addEventListener('click', () => {
       const a = document.createElement('a');
-      a.download = 'socialpulse-cutout.png';
+      a.download = `socialpulse-studio-${state.aspectWidth}x${state.aspectHeight}.png`;
       a.href = canvas.toDataURL('image/png');
       a.click();
-      showToast('Export Complete', 'High-res image downloaded to your device.');
+      showToast('Export Complete', 'High-res master graphic downloaded to your device.');
     });
 
     // Send to Composer Button
     document.getElementById('btn-send-to-composer').addEventListener('click', () => {
       updatePreviews();
       document.getElementById('composer-section').scrollIntoView({ behavior: 'smooth' });
-      showToast('Image Attached', 'Studio canvas synced to Facebook & LinkedIn post composer!');
+      showToast('Graphic Attached', 'Studio canvas synced to Facebook & LinkedIn post composer!');
     });
 
     // Refresh Thumbnail
     document.getElementById('btn-refresh-composer-thumb').addEventListener('click', () => {
       updatePreviews();
-      showToast('Synchronized', 'Composer asset updated with latest canvas state.');
+      showToast('Synchronized', 'Composer asset updated with latest studio canvas state.');
     });
 
     // Composer Input & Live Feed Sync
@@ -1364,8 +1593,6 @@ Automate multi-channel distribution to Facebook Pages and LinkedIn in millisecon
       const text = postTextInput.value;
       charCounter.textContent = text.length + ' / 2200';
       fbPreviewText.textContent = text;
-      
-      // For LinkedIn, highlight hashtags in blue
       const formattedLi = text.replace(/(#[a-zA-Z0-9_]+)/g, '<span class="text-sky-400 font-medium hover:underline cursor-pointer">$1</span>');
       liPreviewText.innerHTML = formattedLi;
     }
@@ -1438,7 +1665,6 @@ Automate multi-channel distribution to Facebook Pages and LinkedIn in millisecon
       const now = new Date();
       const timeStr = now.toTimeString().split(' ')[0];
 
-      // Terminal log sequence
       const logs = [
         { text: `[${timeStr}] ⚡ Dispatching SocialPulse event across ${[isFb ? 'Facebook' : '', isLi ? 'LinkedIn' : ''].filter(Boolean).join(' + ')}...`, color: 'text-brand-400' },
         { text: `[${timeStr}] 🔐 Connecting to AES-256 Credential Vault...`, color: 'text-slate-300' }
@@ -1470,7 +1696,7 @@ Automate multi-channel distribution to Facebook Pages and LinkedIn in millisecon
       }
 
       let delay = 0;
-      terminalLogs.innerHTML = ''; // clear previous logs
+      terminalLogs.innerHTML = '';
       logs.forEach(item => {
         setTimeout(() => {
           const div = document.createElement('div');
@@ -1525,13 +1751,11 @@ Automate multi-channel distribution to Facebook Pages and LinkedIn in millisecon
         tr.classList.remove('bg-brand-500/10', 'animate-pulse');
       }, 2000);
 
-      // Bind trigger now button
       tr.querySelector('.btn-run-job').addEventListener('click', (e) => {
         handleTriggerJob(e.target);
       });
     }
 
-    // Handle Trigger Job
     function handleTriggerJob(button) {
       const row = button.closest('tr');
       const jobId = row.children[0].textContent;
@@ -1545,14 +1769,12 @@ Automate multi-channel distribution to Facebook Pages and LinkedIn in millisecon
       }, 1000);
     }
 
-    // Bind existing trigger buttons
     document.querySelectorAll('.btn-run-job').forEach(btn => {
       btn.addEventListener('click', (e) => {
         handleTriggerJob(e.target);
       });
     });
 
-    // Toast Notification helper
     let toastTimeout;
     function showToast(title, desc) {
       clearTimeout(toastTimeout);
