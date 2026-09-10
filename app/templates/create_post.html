@@ -1,0 +1,1160 @@
+{% extends "base.html" %}
+
+{% block title %}Create Post & Photo Studio - SocialPulse{% endblock %}
+
+{% block content %}
+<!-- Cropper.js CSS -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
+<!-- Cropper.js JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
+
+<div class="max-w-6xl mx-auto space-y-6">
+
+    <div class="flex items-center justify-between">
+        <div>
+            <h2 class="text-xl sm:text-2xl font-bold text-slate-900">Create Post & Photo Studio</h2>
+            <p class="text-xs text-slate-500 mt-0.5">Compose text, crop & remove background, apply presets, and publish to Facebook & LinkedIn</p>
+        </div>
+    </div>
+
+    <!-- Alert if no accounts connected -->
+    {% if not accounts %}
+    <div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs flex items-center justify-between">
+        <span>⚠️ You haven't connected any social media accounts yet.</span>
+        <a href="/accounts" class="font-bold underline ml-2">Connect Now &rarr;</a>
+    </div>
+    {% else %}
+        {% set fb_acc = accounts | selectattr("platform", "equalto", "facebook") | first %}
+        {% if fb_acc and fb_acc.platform_account_id.startswith('fb_page_') %}
+        <div class="p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div class="flex items-center gap-2">
+                <span class="text-base">⚠️</span>
+                <span>বর্তমানে আপনার ফেসবুক <strong>Simulation/Demo Mode</strong>-এ রয়েছে (আসল ফেসবুকে দেখা যাবে না)। সরাসরি আপনার আসল ফেসবুক পেইজে ছবিসহ পোস্ট পাঠাতে রিয়েল পেজ কানেক্ট করুন।</span>
+            </div>
+            <a href="/accounts" class="inline-flex items-center gap-1 font-bold text-xs bg-amber-600 hover:bg-amber-700 text-white px-3 py-1.5 rounded-lg shadow-sm whitespace-nowrap">
+                🔗 Connect Real Page &rarr;
+            </a>
+        </div>
+        {% elif fb_acc and not fb_acc.platform_account_id.startswith('fb_page_') %}
+        <div class="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center gap-2">
+            <span class="text-base">🟢</span>
+            <span>আপনার লাইভ ফেসবুক পেজ <strong>{{ fb_acc.account_name }}</strong> যুক্ত আছে। পোস্ট পাবলিশ করলে এটি সরাসরি আপনার এই পেজে ছবিসহ পোস্ট হবে।</span>
+        </div>
+        {% endif %}
+    {% endif %}
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+        <!-- Composer & Studio Column (7 cols on large screens) -->
+        <div class="lg:col-span-7 space-y-5">
+            <form id="postForm" onsubmit="handlePostSubmit(event)" class="space-y-5">
+                <div id="statusAlert" class="hidden p-3 rounded-lg text-xs font-semibold"></div>
+
+                <!-- 1. Channel Selectors -->
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                    <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider">Target Channels</label>
+                    <div class="grid grid-cols-2 gap-3">
+                        {% set fb_channel = accounts | selectattr("platform", "equalto", "facebook") | first if accounts else None %}
+                        {% set li_channel = accounts | selectattr("platform", "equalto", "linkedin") | first if accounts else None %}
+                        <label class="flex items-center gap-2.5 p-3 rounded-xl border border-slate-200 cursor-pointer hover:bg-slate-50 transition-colors has-[:checked]:border-facebook has-[:checked]:bg-blue-50/40">
+                            <input type="checkbox" id="chkFacebook" value="facebook" checked onchange="updatePreview()" class="w-4 h-4 rounded text-facebook focus:ring-facebook">
+                            <div class="flex items-center gap-2">
+                                <div class="w-6 h-6 rounded bg-facebook text-white flex items-center justify-center text-xs font-bold">f</div>
+                                <div>
+                                    <span class="text-xs font-bold text-slate-800">Facebook Page</span>
+                                    {% if fb_channel %}
+                                        {% if fb_channel.platform_account_id.startswith('fb_page_') %}
+                                        <p class="text-[10px] text-amber-600 font-medium">Demo Mode</p>
+                                        {% else %}
+                                        <p class="text-[10px] text-emerald-600 font-bold truncate max-w-[130px]">🟢 {{ fb_channel.account_name }}</p>
+                                        {% endif %}
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </label>
+
+                        <label class="flex items-center gap-2.5 p-3 rounded-xl border border-slate-200 cursor-pointer hover:bg-slate-50 transition-colors has-[:checked]:border-linkedin has-[:checked]:bg-sky-50/40">
+                            <input type="checkbox" id="chkLinkedin" value="linkedin" checked onchange="updatePreview()" class="w-4 h-4 rounded text-linkedin focus:ring-linkedin">
+                            <div class="flex items-center gap-2">
+                                <div class="w-6 h-6 rounded bg-linkedin text-white flex items-center justify-center text-xs font-bold">in</div>
+                                <div>
+                                    <span class="text-xs font-bold text-slate-800">LinkedIn Profile</span>
+                                    {% if li_channel %}
+                                    <p class="text-[10px] text-slate-500 font-medium truncate max-w-[130px]">{{ li_channel.account_name }}</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 2. Post Text Message -->
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-2">
+                    <div class="flex items-center justify-between">
+                        <label class="text-xs font-semibold text-slate-700 uppercase tracking-wider">Post Message</label>
+                        <span id="charCount" class="text-[11px] text-slate-400 font-mono">0 / 3000</span>
+                    </div>
+                    <textarea id="postContent" required rows="4" oninput="onContentChange()"
+                        placeholder="What would you like to share? Write your post or paste marketing copy..."
+                        class="w-full px-3.5 py-3 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all placeholder:text-slate-400 leading-relaxed"></textarea>
+                </div>
+
+                <!-- 3. Photo Studio: Upload, Sample Photos & Editing Tools -->
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                    <div class="flex items-center justify-between">
+                        <label class="text-xs font-bold text-slate-800 uppercase tracking-wide flex items-center gap-2">
+                            <span>🎨</span> Photo Studio (Crop, BG Remove & Edit)
+                        </label>
+                        <span class="text-[10px] bg-brand-100 text-brand-700 font-bold px-2 py-0.5 rounded-full">Pro Tools</span>
+                    </div>
+
+                    <!-- Sample Pictures Section -->
+                    <div class="space-y-1.5">
+                        <div class="flex items-center justify-between">
+                            <span class="text-[11px] font-semibold text-slate-600">Sample Photos (Click to load instantly):</span>
+                            <span class="text-[10px] text-slate-400">Royalty-Free High-Res</span>
+                        </div>
+                        <div class="grid grid-cols-5 gap-2">
+                            <!-- Sample 1: Business Growth -->
+                            <button type="button" onclick="loadSampleImage('https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=1200&q=80', 'Business Growth')"
+                                class="group relative rounded-lg overflow-hidden border border-slate-200 hover:border-brand-500 aspect-video focus:ring-2 focus:ring-brand-500">
+                                <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=200&q=70" class="w-full h-full object-cover group-hover:scale-105 transition-all">
+                                <span class="absolute inset-x-0 bottom-0 bg-black/60 text-[9px] text-white py-0.5 text-center font-medium">Business</span>
+                            </button>
+                            <!-- Sample 2: Workspace & Laptop -->
+                            <button type="button" onclick="loadSampleImage('https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80', 'Modern Tech')"
+                                class="group relative rounded-lg overflow-hidden border border-slate-200 hover:border-brand-500 aspect-video focus:ring-2 focus:ring-brand-500">
+                                <img src="https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=200&q=70" class="w-full h-full object-cover group-hover:scale-105 transition-all">
+                                <span class="absolute inset-x-0 bottom-0 bg-black/60 text-[9px] text-white py-0.5 text-center font-medium">Coding</span>
+                            </button>
+                            <!-- Sample 3: Team Collab -->
+                            <button type="button" onclick="loadSampleImage('https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1200&q=80', 'Team Strategy')"
+                                class="group relative rounded-lg overflow-hidden border border-slate-200 hover:border-brand-500 aspect-video focus:ring-2 focus:ring-brand-500">
+                                <img src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=200&q=70" class="w-full h-full object-cover group-hover:scale-105 transition-all">
+                                <span class="absolute inset-x-0 bottom-0 bg-black/60 text-[9px] text-white py-0.5 text-center font-medium">Team</span>
+                            </button>
+                            <!-- Sample 4: Minimal Desk & Coffee -->
+                            <button type="button" onclick="loadSampleImage('https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?auto=format&fit=crop&w=1200&q=80', 'Minimal Desk')"
+                                class="group relative rounded-lg overflow-hidden border border-slate-200 hover:border-brand-500 aspect-video focus:ring-2 focus:ring-brand-500">
+                                <img src="https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?auto=format&fit=crop&w=200&q=70" class="w-full h-full object-cover group-hover:scale-105 transition-all">
+                                <span class="absolute inset-x-0 bottom-0 bg-black/60 text-[9px] text-white py-0.5 text-center font-medium">Minimal</span>
+                            </button>
+                            <!-- Sample 5: Startup Mobile Analytics -->
+                            <button type="button" onclick="loadSampleImage('https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1200&q=80', 'Startup Analytics')"
+                                class="group relative rounded-lg overflow-hidden border border-slate-200 hover:border-brand-500 aspect-video focus:ring-2 focus:ring-brand-500">
+                                <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=200&q=70" class="w-full h-full object-cover group-hover:scale-105 transition-all">
+                                <span class="absolute inset-x-0 bottom-0 bg-black/60 text-[9px] text-white py-0.5 text-center font-medium">Analytics</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Drag & Drop Upload Zone -->
+                    <div id="dropZone" onclick="document.getElementById('imageFileInput').click()"
+                        class="border-2 border-dashed border-slate-300 hover:border-brand-500 bg-slate-50 hover:bg-brand-50/20 rounded-xl p-4 text-center cursor-pointer transition-all">
+                        <input type="file" id="imageFileInput" accept="image/*" class="hidden" onchange="handleFileSelect(event)">
+                        <div class="space-y-1">
+                            <div class="text-2xl">📁</div>
+                            <p class="text-xs font-bold text-slate-700">Or Upload Your Own Picture (Click or Drag Here)</p>
+                            <p class="text-[11px] text-slate-400">JPG, PNG, WebP &bull; Ready for instant editing</p>
+                        </div>
+                    </div>
+
+                    <!-- Hidden Media URL (Synced with server upload) -->
+                    <input type="hidden" id="mediaUrl" value="">
+
+                    <!-- ACTIVE STUDIO CONTROLS (Displayed when an image is loaded) -->
+                    <div id="studioControls" class="hidden space-y-4 pt-3 border-t border-slate-200">
+
+                        <!-- Live Visual Studio Workspace Canvas Box -->
+                        <div class="space-y-1.5">
+                            <div class="flex items-center justify-between text-[11px] font-bold text-slate-700 uppercase tracking-wider">
+                                <span>Photo Studio Workspace</span>
+                                <span class="text-[10px] text-slate-400 font-mono">1200 × 628 px</span>
+                            </div>
+                            <div class="rounded-xl p-2.5 flex items-center justify-center min-h-[220px] max-h-80 border border-slate-200 overflow-hidden relative shadow-inner"
+                                 style="background-color: #f8fafc; background-image: linear-gradient(45deg, #e2e8f0 25%, transparent 25%), linear-gradient(-45deg, #e2e8f0 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #e2e8f0 75%), linear-gradient(-45deg, transparent 75%, #e2e8f0 75%); background-size: 16px 16px; background-position: 0 0, 0 8px, 8px -8px, -8px 0px;">
+                                <img id="studioActivePreview" src="" class="max-h-72 object-contain rounded shadow transition-all duration-200" alt="Studio Live Preview">
+                            </div>
+                        </div>
+
+                        <!-- Studio Action Tabs (Crop, Background, Filters, Text) -->
+                        <div class="flex border-b border-slate-200 pb-1 gap-2 text-xs font-semibold overflow-x-auto">
+                            <button type="button" onclick="switchStudioTab('crop')" id="tabBtnCrop" class="studio-tab px-3 py-1.5 rounded-lg bg-brand-50 text-brand-700">
+                                ✂️ Crop & Transform
+                            </button>
+                            <button type="button" onclick="switchStudioTab('background')" id="tabBtnBg" class="studio-tab px-3 py-1.5 rounded-lg text-slate-600 hover:bg-slate-100">
+                                🪄 BG Remove & Replace
+                            </button>
+                            <button type="button" onclick="switchStudioTab('filters')" id="tabBtnFilter" class="studio-tab px-3 py-1.5 rounded-lg text-slate-600 hover:bg-slate-100">
+                                🎨 Colors & Enhancements
+                            </button>
+                            <button type="button" onclick="switchStudioTab('text')" id="tabBtnText" class="studio-tab px-3 py-1.5 rounded-lg text-slate-600 hover:bg-slate-100">
+                                ✍️ Banner Headline
+                            </button>
+                        </div>
+
+                        <!-- TAB 1: CROP & TRANSFORM -->
+                        <div id="tabContentCrop" class="studio-tab-content space-y-3">
+                            <div class="flex flex-wrap items-center justify-between gap-2">
+                                <span class="text-[11px] font-bold text-slate-700 uppercase tracking-wider">Aspect Ratio Preset:</span>
+                                <div class="flex gap-1.5">
+                                    <button type="button" onclick="setCropperRatio(1.91)" class="px-2.5 py-1 text-xs font-semibold rounded-lg border border-brand-500 bg-brand-50 text-brand-700">
+                                        FB/LI (1.91:1)
+                                    </button>
+                                    <button type="button" onclick="setCropperRatio(1)" class="px-2.5 py-1 text-xs font-semibold rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-50">
+                                        Square (1:1)
+                                    </button>
+                                    <button type="button" onclick="setCropperRatio(0.8)" class="px-2.5 py-1 text-xs font-semibold rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-50">
+                                        Portrait (4:5)
+                                    </button>
+                                    <button type="button" onclick="setCropperRatio(NaN)" class="px-2.5 py-1 text-xs font-semibold rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-50">
+                                        Freeform
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Interactive Cropper Container -->
+                            <div class="max-h-80 overflow-hidden bg-slate-900 rounded-xl flex items-center justify-center p-2">
+                                <img id="cropperImage" src="" alt="Crop Target" class="max-w-full max-h-72">
+                            </div>
+
+                            <!-- Transform Actions -->
+                            <div class="flex items-center justify-between pt-1">
+                                <div class="flex gap-2">
+                                    <button type="button" onclick="rotateCropper(-90)" class="px-2.5 py-1 text-xs bg-slate-100 hover:bg-slate-200 rounded-lg text-slate-700 font-medium">
+                                        ↺ Rotate -90°
+                                    </button>
+                                    <button type="button" onclick="rotateCropper(90)" class="px-2.5 py-1 text-xs bg-slate-100 hover:bg-slate-200 rounded-lg text-slate-700 font-medium">
+                                        ↻ Rotate +90°
+                                    </button>
+                                    <button type="button" onclick="flipCropper()" class="px-2.5 py-1 text-xs bg-slate-100 hover:bg-slate-200 rounded-lg text-slate-700 font-medium">
+                                        ⇆ Flip
+                                    </button>
+                                </div>
+                                <button type="button" onclick="applyCrop()" class="px-4 py-1.5 text-xs bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-lg shadow">
+                                    ✂️ Apply Crop
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- TAB 2: BG REMOVE & REPLACE -->
+                        <div id="tabContentBg" class="studio-tab-content hidden space-y-3">
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 bg-indigo-50/50 rounded-xl border border-indigo-100">
+                                <div>
+                                    <div class="text-xs font-bold text-indigo-950">Remove Existing Background</div>
+                                    <div class="text-[11px] text-indigo-700">Detects background and isolates the subject transparently</div>
+                                </div>
+                                <button type="button" id="btnRemoveBg" onclick="handleRemoveBg()"
+                                    class="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-lg shadow active:scale-95 transition-all">
+                                    🪄 Remove Background
+                                </button>
+                            </div>
+
+                            <!-- Upload Custom BG from Computer -->
+                            <div class="p-3 bg-gradient-to-r from-slate-50 to-indigo-50/40 border border-indigo-100 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                                <div class="flex items-center gap-2.5">
+                                    <div class="w-9 h-9 rounded-xl bg-indigo-600 text-white flex items-center justify-center text-base font-bold shadow-sm">
+                                        🖼️
+                                    </div>
+                                    <div>
+                                        <div class="text-xs font-bold text-slate-900">Upload Custom BG from Computer</div>
+                                        <div class="text-[11px] text-slate-500">Select any scenery, office, or wallpaper from your device</div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <input type="file" id="customBgInput" accept="image/*" class="hidden" onchange="handleCustomBgSelect(event)">
+                                    <button type="button" onclick="document.getElementById('customBgInput').click()"
+                                        class="w-full sm:w-auto px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-lg shadow active:scale-95 transition-all flex items-center justify-center gap-1.5">
+                                        <span>📂 Browse Image</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Background Replace Options -->
+                            <div class="space-y-2">
+                                <label class="text-[11px] font-bold text-slate-700 uppercase tracking-wider">Or Choose Preset Background:</label>
+                                
+                                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                                    <button type="button" onclick="setNewBackground('transparent')" class="p-2 text-xs font-medium rounded-lg border border-slate-200 bg-white hover:bg-slate-50 flex items-center justify-center gap-1">
+                                        <span>🏁</span> Transparent
+                                    </button>
+                                    <button type="button" onclick="setNewBackground('custom-image')" id="btnCustomBgTile" class="p-2 text-xs font-semibold rounded-lg border border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 flex items-center justify-center gap-1">
+                                        <span>🖼️</span> Custom Image
+                                    </button>
+                                    <button type="button" onclick="setNewBackground('gradient-indigo')" class="p-2 text-xs font-medium rounded-lg border text-white bg-gradient-to-r from-indigo-600 to-purple-600">
+                                        Indigo Mesh
+                                    </button>
+                                    <button type="button" onclick="setNewBackground('gradient-sunset')" class="p-2 text-xs font-medium rounded-lg border text-white bg-gradient-to-r from-amber-500 to-rose-600">
+                                        Sunset Glow
+                                    </button>
+                                    <button type="button" onclick="setNewBackground('gradient-emerald')" class="p-2 text-xs font-medium rounded-lg border text-white bg-gradient-to-r from-emerald-600 to-teal-500">
+                                        Emerald Tech
+                                    </button>
+                                    <button type="button" onclick="setNewBackground('studio-white')" class="p-2 text-xs font-medium rounded-lg border border-slate-200 bg-slate-100 text-slate-800">
+                                        Studio White
+                                    </button>
+                                    <button type="button" onclick="setNewBackground('midnight-dark')" class="p-2 text-xs font-medium rounded-lg border text-white bg-slate-900">
+                                        Midnight Dark
+                                    </button>
+                                    <button type="button" onclick="setNewBackground('backdrop-office')" class="p-2 text-xs font-medium rounded-lg border border-slate-200 bg-slate-50 text-slate-800">
+                                        🏢 Office Scene
+                                    </button>
+                                    <button type="button" onclick="setNewBackground('backdrop-abstract')" class="p-2 text-xs font-medium rounded-lg border border-slate-200 bg-slate-50 text-slate-800">
+                                        ✨ Bokeh Lights
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Photo Fitting & Subject Position Controls -->
+                            <div class="p-3.5 bg-slate-50/90 rounded-xl border border-slate-200 space-y-3">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-sm">📐</span>
+                                        <span class="text-xs font-bold text-slate-800 uppercase tracking-wider">Photo Fitting & Placement (ছবি এডজাস্ট ও পজিশন)</span>
+                                    </div>
+                                    <button type="button" onclick="resetSubjectPosition()" class="text-[11px] text-brand-600 hover:text-brand-800 font-semibold flex items-center gap-1 hover:underline">
+                                        🔄 Reset Position
+                                    </button>
+                                </div>
+
+                                <!-- Quick Align Presets -->
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-slate-600 mb-1.5">Quick Placement (নিচের ফাঁকা গ্যাপ দূর করতে):</label>
+                                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                                        <button type="button" onclick="setSubjectAlignment('bottom')" id="btnAlignBottom"
+                                            class="align-btn p-2 text-xs font-semibold rounded-lg border bg-brand-50 border-brand-500 text-brand-700 flex items-center justify-center gap-1.5 shadow-sm">
+                                            <span>⬇️</span> Snap to Bottom
+                                        </button>
+                                        <button type="button" onclick="setSubjectAlignment('center')" id="btnAlignCenter"
+                                            class="align-btn p-2 text-xs font-medium rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 flex items-center justify-center gap-1.5">
+                                            <span>🎯</span> Center
+                                        </button>
+                                        <button type="button" onclick="setSubjectAlignment('bottom-left')" id="btnAlignBottomLeft"
+                                            class="align-btn p-2 text-xs font-medium rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 flex items-center justify-center gap-1.5">
+                                            <span>↙️</span> Bottom Left
+                                        </button>
+                                        <button type="button" onclick="setSubjectAlignment('bottom-right')" id="btnAlignBottomRight"
+                                            class="align-btn p-2 text-xs font-medium rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 flex items-center justify-center gap-1.5">
+                                            <span>↘️</span> Bottom Right
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Fine Sliders: Scale & Offsets -->
+                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-slate-200/70">
+                                    <div>
+                                        <div class="flex justify-between text-[11px] font-semibold text-slate-600 mb-1">
+                                            <span>🔍 Zoom / Size:</span>
+                                            <span id="valSubjectScale" class="text-brand-600 font-bold">100%</span>
+                                        </div>
+                                        <input type="range" id="sliderSubjectScale" min="60" max="170" value="100" oninput="updateSubjectTransforms()" class="w-full accent-brand-600">
+                                    </div>
+                                    <div>
+                                        <div class="flex justify-between text-[11px] font-semibold text-slate-600 mb-1">
+                                            <span>↕️ Move Up / Down:</span>
+                                            <span id="valSubjectOffsetY" class="text-brand-600 font-bold">0px</span>
+                                        </div>
+                                        <input type="range" id="sliderSubjectOffsetY" min="-180" max="180" value="0" oninput="updateSubjectTransforms()" class="w-full accent-brand-600">
+                                    </div>
+                                    <div>
+                                        <div class="flex justify-between text-[11px] font-semibold text-slate-600 mb-1">
+                                            <span>↔️ Move Left / Right:</span>
+                                            <span id="valSubjectOffsetX" class="text-brand-600 font-bold">0px</span>
+                                        </div>
+                                        <input type="range" id="sliderSubjectOffsetX" min="-300" max="300" value="0" oninput="updateSubjectTransforms()" class="w-full accent-brand-600">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- TAB 3: COLORS & ENHANCEMENTS -->
+                        <div id="tabContentFilter" class="studio-tab-content hidden space-y-3">
+                            <div class="text-[11px] font-bold text-slate-700 uppercase tracking-wider">Quick Presets:</div>
+                            <div class="flex flex-wrap gap-1.5">
+                                <button type="button" onclick="applyFilterPreset('enhance')" class="px-2.5 py-1 text-xs rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 font-medium hover:bg-emerald-100">
+                                    ✨ Auto Enhance
+                                </button>
+                                <button type="button" onclick="applyFilterPreset('studio')" class="px-2.5 py-1 text-xs rounded-lg bg-indigo-50 text-indigo-700 border border-indigo-200 font-medium hover:bg-indigo-100">
+                                    📸 Studio Crisp
+                                </button>
+                                <button type="button" onclick="applyFilterPreset('warm')" class="px-2.5 py-1 text-xs rounded-lg bg-amber-50 text-amber-700 border border-amber-200 font-medium hover:bg-amber-100">
+                                    🌅 Warm Glow
+                                </button>
+                                <button type="button" onclick="applyFilterPreset('cool')" class="px-2.5 py-1 text-xs rounded-lg bg-sky-50 text-sky-700 border border-sky-200 font-medium hover:bg-sky-100">
+                                    💎 Cool Tone
+                                </button>
+                                <button type="button" onclick="applyFilterPreset('bw')" class="px-2.5 py-1 text-xs rounded-lg bg-slate-800 text-white font-medium hover:bg-black">
+                                    🖤 B&W Classic
+                                </button>
+                                <button type="button" onclick="applyFilterPreset('reset')" class="px-2.5 py-1 text-xs rounded-lg bg-slate-100 text-slate-600 font-medium hover:bg-slate-200">
+                                    🔄 Reset
+                                </button>
+                            </div>
+
+                            <div class="grid grid-cols-3 gap-3 pt-2">
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-slate-600">Brightness: <span id="valBrightness">100%</span></label>
+                                    <input type="range" id="sliderBrightness" min="50" max="150" value="100" oninput="updateSliders()" class="w-full">
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-slate-600">Contrast: <span id="valContrast">100%</span></label>
+                                    <input type="range" id="sliderContrast" min="50" max="150" value="100" oninput="updateSliders()" class="w-full">
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-slate-600">Saturation: <span id="valSaturation">100%</span></label>
+                                    <input type="range" id="sliderSaturation" min="0" max="200" value="100" oninput="updateSliders()" class="w-full">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- TAB 4: BANNER HEADLINE -->
+                        <div id="tabContentText" class="studio-tab-content hidden space-y-3">
+                            <div class="flex items-center justify-between">
+                                <label class="text-[11px] font-bold text-slate-700 uppercase tracking-wider">Headline / Watermark Banner</label>
+                                <label class="flex items-center gap-1.5 text-xs text-slate-600 cursor-pointer">
+                                    <input type="checkbox" id="chkTextOverlay" onchange="renderStudioCanvas()" class="rounded text-brand-600 focus:ring-brand-500">
+                                    <span class="font-semibold">Enable Text Banner</span>
+                                </label>
+                            </div>
+                            <div id="overlaySettings" class="space-y-2">
+                                <input type="text" id="overlayText" placeholder="Enter title to display on image..." oninput="renderStudioCanvas()"
+                                    class="w-full px-3 py-2 text-xs rounded-lg border border-slate-200 focus:ring-1 focus:ring-brand-500">
+                                <div class="flex gap-2">
+                                    <select id="overlayPosition" onchange="renderStudioCanvas()" class="px-2.5 py-1 text-xs rounded-lg border border-slate-200 bg-white">
+                                        <option value="bottom">Bottom Banner</option>
+                                        <option value="top">Top Header</option>
+                                        <option value="center">Center Stamp</option>
+                                    </select>
+                                    <select id="overlayTheme" onchange="renderStudioCanvas()" class="px-2.5 py-1 text-xs rounded-lg border border-slate-200 bg-white">
+                                        <option value="dark">Dark Gradient Bar</option>
+                                        <option value="brand">Brand Indigo Bar</option>
+                                        <option value="crimson">Bold Crimson Bar</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Hidden Processing Canvas -->
+                        <canvas id="studioCanvas" class="hidden"></canvas>
+
+                        <!-- Main Save / Set Action -->
+                        <button type="button" id="btnApplyStudio" onclick="saveAndApplyStudioImage()"
+                            class="w-full py-2.5 px-4 rounded-xl bg-slate-900 hover:bg-black text-white text-xs font-bold transition-all shadow flex items-center justify-center gap-2">
+                            <span>✅</span> Set this Final Optimized Image for Post
+                        </button>
+                    </div>
+
+                    <!-- Image Ready Confirmation Badge -->
+                    <div id="imageReadyBadge" class="hidden p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span class="text-base">🎉</span>
+                            <span id="imageReadyText">Image edited & ready for post!</span>
+                        </div>
+                        <button type="button" onclick="removeImage()" class="text-xs text-red-600 hover:underline font-bold">Remove Image</button>
+                    </div>
+                </div>
+
+                <!-- 4. Scheduling & Submit Section -->
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                    <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider">Publish Time</label>
+                    
+                    <div class="grid grid-cols-2 gap-3">
+                        <label class="flex items-center gap-2 p-3 rounded-xl border border-slate-200 cursor-pointer has-[:checked]:border-brand-500 has-[:checked]:bg-brand-50/50">
+                            <input type="radio" name="publishType" value="now" checked onchange="toggleSchedulePicker(false)" class="text-brand-600 focus:ring-brand-500">
+                            <span class="text-xs font-semibold text-slate-800">Publish Immediately</span>
+                        </label>
+                        <label class="flex items-center gap-2 p-3 rounded-xl border border-slate-200 cursor-pointer has-[:checked]:border-brand-500 has-[:checked]:bg-brand-50/50">
+                            <input type="radio" name="publishType" value="later" onchange="toggleSchedulePicker(true)" class="text-brand-600 focus:ring-brand-500">
+                            <span class="text-xs font-semibold text-slate-800">Schedule for Later</span>
+                        </label>
+                    </div>
+
+                    <div id="schedulePickerContainer" class="hidden">
+                        <label class="block text-[11px] text-slate-500 mb-1">Pick Date & Time</label>
+                        <input type="datetime-local" id="scheduledAt"
+                            class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500">
+                    </div>
+
+                    <button type="submit" id="submitBtn"
+                        class="w-full py-3 px-4 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold shadow-md shadow-brand-500/25 transition-all active:scale-[0.98]">
+                        🚀 Publish Now
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Live Social Feed Preview Column (5 cols on large screens) -->
+        <div class="lg:col-span-5 space-y-4">
+            <div class="text-xs font-bold text-slate-700 uppercase tracking-wider">Live Social Feed Preview</div>
+
+            <!-- Card Mockup -->
+            <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm space-y-3 sticky top-4">
+                <!-- Preview Header -->
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-brand-100 text-brand-700 flex items-center justify-center font-bold text-sm">
+                        {{ user.email[0]|upper }}
+                    </div>
+                    <div>
+                        <div class="text-xs font-bold text-slate-900">{{ user.full_name or "Your Account" }}</div>
+                        <div class="text-[10px] text-slate-400 flex items-center gap-1">
+                            <span>Just now</span> &bull; <span>🌐 Public</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Preview Content -->
+                <div id="previewText" class="text-xs text-slate-700 whitespace-pre-wrap min-h-[40px] leading-relaxed">
+                    Your post preview will appear here in real-time as you type...
+                </div>
+
+                <!-- Preview Image Frame -->
+                <div id="previewMediaBox" class="hidden rounded-xl overflow-hidden border border-slate-200"
+                     style="background-color: #f8fafc; background-image: linear-gradient(45deg, #e2e8f0 25%, transparent 25%), linear-gradient(-45deg, #e2e8f0 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #e2e8f0 75%), linear-gradient(-45deg, transparent 75%, #e2e8f0 75%); background-size: 16px 16px; background-position: 0 0, 0 8px, 8px -8px, -8px 0px;">
+                    <img id="previewImg" src="" alt="Post Visual" class="w-full h-auto object-contain max-h-72">
+                </div>
+
+                <!-- Bottom Fake Reactions -->
+                <div class="pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400 font-medium">
+                    <span>👍 Like</span>
+                    <span>💬 Comment</span>
+                    <span>↗️ Share</span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+// --- Global State ---
+let cropper = null;
+let activeImageElement = new Image();
+let customBackgroundImage = null;
+let activeBackgroundType = 'transparent';
+let subjectAlignment = 'bottom';
+let subjectScale = 100;
+let subjectOffsetY = 0;
+let subjectOffsetX = 0;
+let transformSaveTimeout = null;
+let filterBrightness = 100;
+let filterContrast = 100;
+let filterSaturation = 100;
+let flipHorizontal = false;
+
+// --- Tab Switching ---
+function switchStudioTab(tab) {
+    document.querySelectorAll('.studio-tab').forEach(b => {
+        b.className = "studio-tab px-3 py-1.5 rounded-lg text-slate-600 hover:bg-slate-100";
+    });
+    document.querySelectorAll('.studio-tab-content').forEach(c => c.classList.add('hidden'));
+
+    if (tab === 'crop') {
+        document.getElementById('tabBtnCrop').className = "studio-tab px-3 py-1.5 rounded-lg bg-brand-50 text-brand-700";
+        document.getElementById('tabContentCrop').classList.remove('hidden');
+    } else if (tab === 'background') {
+        document.getElementById('tabBtnBg').className = "studio-tab px-3 py-1.5 rounded-lg bg-brand-50 text-brand-700";
+        document.getElementById('tabContentBg').classList.remove('hidden');
+    } else if (tab === 'filters') {
+        document.getElementById('tabBtnFilter').className = "studio-tab px-3 py-1.5 rounded-lg bg-brand-50 text-brand-700";
+        document.getElementById('tabContentFilter').classList.remove('hidden');
+    } else if (tab === 'text') {
+        document.getElementById('tabBtnText').className = "studio-tab px-3 py-1.5 rounded-lg bg-brand-50 text-brand-700";
+        document.getElementById('tabContentText').classList.remove('hidden');
+    }
+}
+
+// --- Sample Image Loader ---
+function loadSampleImage(url, title) {
+    // Fill post content if empty
+    const postBox = document.getElementById('postContent');
+    if (!postBox.value) {
+        postBox.value = `Excited to share insights on ${title}! 🚀 #Growth #Innovation`;
+        onContentChange();
+    }
+    
+    // Load image via proxy/crossOrigin
+    const img = new Image();
+    img.crossOrigin = "Anonymous";
+    img.onload = function() {
+        initStudioWithImage(img);
+    };
+    img.src = url;
+}
+
+function handleFileSelect(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(evt) {
+        const img = new Image();
+        img.onload = function() {
+            initStudioWithImage(img);
+        };
+        img.src = evt.target.result;
+    };
+    reader.readAsDataURL(file);
+}
+
+function initStudioWithImage(img) {
+    activeImageElement = img;
+    document.getElementById('studioControls').classList.remove('hidden');
+
+    const cropTarget = document.getElementById('cropperImage');
+    cropTarget.src = img.src;
+
+    if (cropper) cropper.destroy();
+
+    cropper = new Cropper(cropTarget, {
+        aspectRatio: 1.91,
+        viewMode: 1,
+        autoCropArea: 1,
+        responsive: true
+    });
+
+    renderStudioCanvas();
+    saveAndApplyStudioImage();
+}
+
+// --- Cropper Functions ---
+function setCropperRatio(ratio) {
+    if (cropper) cropper.setAspectRatio(ratio);
+}
+
+function rotateCropper(deg) {
+    if (cropper) cropper.rotate(deg);
+}
+
+function flipCropper() {
+    if (!cropper) return;
+    flipHorizontal = !flipHorizontal;
+    cropper.scaleX(flipHorizontal ? -1 : 1);
+}
+
+function applyCrop() {
+    if (!cropper) return;
+    const croppedCanvas = cropper.getCroppedCanvas({ width: 1200 });
+    const img = new Image();
+    img.onload = function() {
+        activeImageElement = img;
+        renderStudioCanvas();
+        saveAndApplyStudioImage();
+        switchStudioTab('background');
+    };
+    img.src = croppedCanvas.toDataURL('image/png');
+}
+
+// --- Background Removal & Replacement ---
+async function handleRemoveBg() {
+    const btn = document.getElementById('btnRemoveBg');
+    btn.disabled = true;
+    btn.innerHTML = `
+        <span class="inline-flex items-center gap-1.5">
+            <svg class="animate-spin h-3.5 w-3.5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+            </svg>
+            Removing BG with AI...
+        </span>
+    `;
+
+    // Extract current image as base64
+    const canvas = document.createElement('canvas');
+    canvas.width = activeImageElement.naturalWidth || activeImageElement.width || 800;
+    canvas.height = activeImageElement.naturalHeight || activeImageElement.height || 600;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(activeImageElement, 0, 0);
+    const dataUrl = canvas.toDataURL('image/png');
+
+    try {
+        const res = await fetch('/api/v1/posts/remove-bg', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ image_data: dataUrl })
+        });
+        const data = await res.json();
+        if (res.ok && data.image_data) {
+            const transparentImg = new Image();
+            transparentImg.onload = function() {
+                activeImageElement = transparentImg;
+                btn.disabled = false;
+                btn.innerHTML = "✅ Background Removed!";
+                btn.className = "px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-lg shadow active:scale-95 transition-all";
+                activeBackgroundType = 'transparent';
+                setSubjectAlignment('bottom');
+                renderStudioCanvas();
+                saveAndApplyStudioImage();
+            };
+            transparentImg.src = data.image_data;
+        } else {
+            alert("Background removal could not complete. Please try another image.");
+            btn.disabled = false;
+            btn.innerHTML = "🪄 Remove Background";
+        }
+    } catch(e) {
+        console.error("BG remove error:", e);
+        alert("Network error removing background: " + e.message);
+        btn.disabled = false;
+        btn.innerHTML = "🪄 Remove Background";
+    }
+}
+
+function handleCustomBgSelect(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(evt) {
+        const img = new Image();
+        img.onload = function() {
+            customBackgroundImage = img;
+            activeBackgroundType = 'custom-image';
+            const btnCustom = document.getElementById('btnCustomBgTile');
+            if (btnCustom) {
+                btnCustom.className = "p-2 text-xs font-semibold rounded-lg border border-indigo-600 bg-indigo-600 text-white flex items-center justify-center gap-1 shadow-sm";
+            }
+            renderStudioCanvas();
+            saveAndApplyStudioImage();
+        };
+        img.src = evt.target.result;
+    };
+    reader.readAsDataURL(file);
+}
+
+function setNewBackground(type) {
+    if (type === 'custom-image') {
+        if (!customBackgroundImage) {
+            document.getElementById('customBgInput').click();
+            return;
+        }
+    }
+    activeBackgroundType = type;
+    renderStudioCanvas();
+    saveAndApplyStudioImage();
+}
+
+// --- Photo Fitting & Subject Position Controls ---
+function updateSubjectTransforms() {
+    subjectScale = parseInt(document.getElementById('sliderSubjectScale').value);
+    subjectOffsetY = parseInt(document.getElementById('sliderSubjectOffsetY').value);
+    subjectOffsetX = parseInt(document.getElementById('sliderSubjectOffsetX').value);
+
+    document.getElementById('valSubjectScale').innerText = `${subjectScale}%`;
+    document.getElementById('valSubjectOffsetY').innerText = `${subjectOffsetY}px`;
+    document.getElementById('valSubjectOffsetX').innerText = `${subjectOffsetX}px`;
+
+    renderStudioCanvas();
+
+    if (transformSaveTimeout) clearTimeout(transformSaveTimeout);
+    transformSaveTimeout = setTimeout(() => {
+        saveAndApplyStudioImage();
+    }, 400);
+}
+
+function setSubjectAlignment(align) {
+    subjectAlignment = align;
+    document.querySelectorAll('.align-btn').forEach(btn => {
+        btn.className = "align-btn p-2 text-xs font-medium rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 flex items-center justify-center gap-1.5";
+    });
+
+    if (align === 'bottom') {
+        const b = document.getElementById('btnAlignBottom');
+        if (b) b.className = "align-btn p-2 text-xs font-semibold rounded-lg border bg-brand-50 border-brand-500 text-brand-700 flex items-center justify-center gap-1.5 shadow-sm";
+    } else if (align === 'center') {
+        const b = document.getElementById('btnAlignCenter');
+        if (b) b.className = "align-btn p-2 text-xs font-semibold rounded-lg border bg-brand-50 border-brand-500 text-brand-700 flex items-center justify-center gap-1.5 shadow-sm";
+    } else if (align === 'bottom-left') {
+        const b = document.getElementById('btnAlignBottomLeft');
+        if (b) b.className = "align-btn p-2 text-xs font-semibold rounded-lg border bg-brand-50 border-brand-500 text-brand-700 flex items-center justify-center gap-1.5 shadow-sm";
+    } else if (align === 'bottom-right') {
+        const b = document.getElementById('btnAlignBottomRight');
+        if (b) b.className = "align-btn p-2 text-xs font-semibold rounded-lg border bg-brand-50 border-brand-500 text-brand-700 flex items-center justify-center gap-1.5 shadow-sm";
+    }
+
+    renderStudioCanvas();
+    saveAndApplyStudioImage();
+}
+
+function resetSubjectPosition() {
+    subjectAlignment = 'bottom';
+    subjectScale = 100;
+    subjectOffsetY = 0;
+    subjectOffsetX = 0;
+
+    const sScale = document.getElementById('sliderSubjectScale');
+    const sOffsetY = document.getElementById('sliderSubjectOffsetY');
+    const sOffsetX = document.getElementById('sliderSubjectOffsetX');
+
+    if (sScale) sScale.value = 100;
+    if (sOffsetY) sOffsetY.value = 0;
+    if (sOffsetX) sOffsetX.value = 0;
+
+    const vScale = document.getElementById('valSubjectScale');
+    const vOffsetY = document.getElementById('valSubjectOffsetY');
+    const vOffsetX = document.getElementById('valSubjectOffsetX');
+
+    if (vScale) vScale.innerText = "100%";
+    if (vOffsetY) vOffsetY.innerText = "0px";
+    if (vOffsetX) vOffsetX.innerText = "0px";
+
+    setSubjectAlignment('bottom');
+}
+
+// --- Filters & Enhancements ---
+function applyFilterPreset(preset) {
+    if (preset === 'enhance') {
+        filterBrightness = 108; filterContrast = 118; filterSaturation = 125;
+    } else if (preset === 'studio') {
+        filterBrightness = 112; filterContrast = 125; filterSaturation = 105;
+    } else if (preset === 'warm') {
+        filterBrightness = 105; filterContrast = 110; filterSaturation = 135;
+    } else if (preset === 'cool') {
+        filterBrightness = 105; filterContrast = 105; filterSaturation = 85;
+    } else if (preset === 'bw') {
+        filterBrightness = 100; filterContrast = 130; filterSaturation = 0;
+    } else if (preset === 'reset') {
+        filterBrightness = 100; filterContrast = 100; filterSaturation = 100;
+    }
+    document.getElementById('sliderBrightness').value = filterBrightness;
+    document.getElementById('sliderContrast').value = filterContrast;
+    document.getElementById('sliderSaturation').value = filterSaturation;
+    updateSliders();
+}
+
+function updateSliders() {
+    filterBrightness = document.getElementById('sliderBrightness').value;
+    filterContrast = document.getElementById('sliderContrast').value;
+    filterSaturation = document.getElementById('sliderSaturation').value;
+
+    document.getElementById('valBrightness').innerText = `${filterBrightness}%`;
+    document.getElementById('valContrast').innerText = `${filterContrast}%`;
+    document.getElementById('valSaturation').innerText = `${filterSaturation}%`;
+
+    renderStudioCanvas();
+}
+
+// --- Central Canvas Rendering Engine ---
+function renderStudioCanvas() {
+    if (!activeImageElement || !activeImageElement.src) return;
+
+    const canvas = document.getElementById('studioCanvas');
+    const ctx = canvas.getContext('2d');
+
+    const targetW = 1200;
+    const targetH = Math.round(targetW / 1.91);
+    canvas.width = targetW;
+    canvas.height = targetH;
+
+    // 1. Draw Background
+    if (activeBackgroundType === 'custom-image' && customBackgroundImage) {
+        // Draw custom user-uploaded background image covered to canvas aspect ratio
+        const bgW = customBackgroundImage.naturalWidth || customBackgroundImage.width || 1200;
+        const bgH = customBackgroundImage.naturalHeight || customBackgroundImage.height || 628;
+        const bgRatio = bgW / bgH;
+        const targetRatio = targetW / targetH;
+        let cW, cH, cX, cY;
+
+        if (bgRatio > targetRatio) {
+            cH = targetH;
+            cW = targetH * bgRatio;
+            cX = (targetW - cW) / 2;
+            cY = 0;
+        } else {
+            cW = targetW;
+            cH = targetW / bgRatio;
+            cX = 0;
+            cY = (targetH - cH) / 2;
+        }
+        ctx.drawImage(customBackgroundImage, cX, cY, cW, cH);
+    } else if (activeBackgroundType === 'gradient-indigo') {
+        let grad = ctx.createLinearGradient(0, 0, targetW, targetH);
+        grad.addColorStop(0, '#4f46e5'); grad.addColorStop(1, '#7c3aed');
+        ctx.fillStyle = grad; ctx.fillRect(0, 0, targetW, targetH);
+    } else if (activeBackgroundType === 'gradient-sunset') {
+        let grad = ctx.createLinearGradient(0, 0, targetW, targetH);
+        grad.addColorStop(0, '#f97316'); grad.addColorStop(1, '#e11d48');
+        ctx.fillStyle = grad; ctx.fillRect(0, 0, targetW, targetH);
+    } else if (activeBackgroundType === 'gradient-emerald') {
+        let grad = ctx.createLinearGradient(0, 0, targetW, targetH);
+        grad.addColorStop(0, '#059669'); grad.addColorStop(1, '#0d9488');
+        ctx.fillStyle = grad; ctx.fillRect(0, 0, targetW, targetH);
+    } else if (activeBackgroundType === 'studio-white') {
+        ctx.fillStyle = '#f8fafc'; ctx.fillRect(0, 0, targetW, targetH);
+    } else if (activeBackgroundType === 'midnight-dark') {
+        ctx.fillStyle = '#0f172a'; ctx.fillRect(0, 0, targetW, targetH);
+    } else if (activeBackgroundType === 'backdrop-office') {
+        ctx.fillStyle = '#e2e8f0'; ctx.fillRect(0, 0, targetW, targetH);
+        // Draw subtle office grid pattern
+        ctx.strokeStyle = '#cbd5e1'; ctx.lineWidth = 2;
+        for (let x = 0; x < targetW; x += 60) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, targetH); ctx.stroke(); }
+    } else if (activeBackgroundType === 'backdrop-abstract') {
+        let grad = ctx.createRadialGradient(targetW/2, targetH/2, 50, targetW/2, targetH/2, targetW/2);
+        grad.addColorStop(0, '#6366f1'); grad.addColorStop(1, '#1e1b4b');
+        ctx.fillStyle = grad; ctx.fillRect(0, 0, targetW, targetH);
+    } else {
+        // Transparent default (clear)
+        ctx.clearRect(0, 0, targetW, targetH);
+    }
+
+    // 2. Apply Filters and Draw Subject with Scaling & Alignment
+    ctx.filter = `brightness(${filterBrightness}%) contrast(${filterContrast}%) saturate(${filterSaturation}%)`;
+
+    const imgW = activeImageElement.naturalWidth || activeImageElement.width || 1;
+    const imgH = activeImageElement.naturalHeight || activeImageElement.height || 1;
+    const imgRatio = imgW / imgH;
+
+    const scaleFactor = (subjectScale || 100) / 100;
+    let dw, dh, dx, dy;
+
+    if (subjectAlignment === 'bottom' || subjectAlignment === 'bottom-left' || subjectAlignment === 'bottom-right') {
+        // Snap directly to bottom border (0px gap at the bottom)
+        dh = targetH * 0.98 * scaleFactor;
+        dw = dh * imgRatio;
+
+        if (subjectAlignment === 'bottom-left') {
+            dx = (targetW * 0.04) + subjectOffsetX;
+        } else if (subjectAlignment === 'bottom-right') {
+            dx = targetW - dw - (targetW * 0.04) + subjectOffsetX;
+        } else {
+            // centered horizontally, snapped to bottom
+            dx = ((targetW - dw) / 2) + subjectOffsetX;
+        }
+        // dy + dh = targetH + subjectOffsetY (flushed to bottom when offsetY=0)
+        dy = targetH - dh + subjectOffsetY;
+    } else {
+        // Center alignment
+        const maxW = targetW * 0.94;
+        const maxH = targetH * 0.94;
+        if (imgRatio > (maxW / maxH)) {
+            dw = maxW * scaleFactor;
+            dh = dw / imgRatio;
+        } else {
+            dh = maxH * scaleFactor;
+            dw = dh * imgRatio;
+        }
+        dx = ((targetW - dw) / 2) + subjectOffsetX;
+        dy = ((targetH - dh) / 2) + subjectOffsetY;
+    }
+
+    ctx.drawImage(activeImageElement, dx, dy, dw, dh);
+    ctx.filter = 'none'; // Clear filter
+
+    // 3. Draw Text / Banner Overlay if enabled
+    const showOverlay = document.getElementById('chkTextOverlay').checked;
+    if (showOverlay) {
+        const text = document.getElementById('overlayText').value.trim();
+        const pos = document.getElementById('overlayPosition').value;
+        const theme = document.getElementById('overlayTheme').value;
+
+        if (text) {
+            const barH = 110;
+            let barY = targetH - barH;
+            if (pos === 'top') barY = 0;
+            else if (pos === 'center') barY = (targetH - barH) / 2;
+
+            let bGrad = ctx.createLinearGradient(0, barY, targetW, barY + barH);
+            if (theme === 'brand') {
+                bGrad.addColorStop(0, 'rgba(79, 70, 229, 0.94)'); bGrad.addColorStop(1, 'rgba(99, 102, 241, 0.94)');
+            } else if (theme === 'crimson') {
+                bGrad.addColorStop(0, 'rgba(225, 29, 72, 0.94)'); bGrad.addColorStop(1, 'rgba(244, 63, 94, 0.94)');
+            } else {
+                bGrad.addColorStop(0, 'rgba(15, 23, 42, 0.92)'); bGrad.addColorStop(1, 'rgba(30, 41, 59, 0.92)');
+            }
+
+            ctx.fillStyle = bGrad;
+            ctx.fillRect(0, barY, targetW, barH);
+
+            ctx.fillStyle = '#FFFFFF';
+            ctx.font = 'bold 40px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(text, targetW / 2, barY + (barH / 2));
+        }
+    }
+
+    // Update Live Previews with PNG to preserve full transparency
+    const dataUrl = canvas.toDataURL('image/png');
+    const studioPreview = document.getElementById('studioActivePreview');
+    if (studioPreview) {
+        studioPreview.src = dataUrl;
+    }
+    document.getElementById('previewMediaBox').classList.remove('hidden');
+    document.getElementById('previewImg').src = dataUrl;
+}
+
+// --- Save Processed Canvas Image to Server ---
+async function saveAndApplyStudioImage() {
+    const canvas = document.getElementById('studioCanvas');
+    const dataUrl = canvas.toDataURL('image/png');
+    const btn = document.getElementById('btnApplyStudio');
+    btn.disabled = true;
+    btn.innerText = "⏳ Saving Final Optimized Image...";
+
+    try {
+        const res = await fetch('/api/v1/posts/upload-base64', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ image_data: dataUrl })
+        });
+        const data = await res.json();
+        if (res.ok) {
+            document.getElementById('mediaUrl').value = data.url;
+            document.getElementById('imageReadyBadge').classList.remove('hidden');
+            document.getElementById('imageReadyText').innerText = "Image edited & locked for post!";
+            btn.innerText = "✨ Final Image Set for Post";
+            btn.classList.replace('bg-slate-900', 'bg-emerald-600');
+            updatePreview();
+        } else {
+            alert("Could not save image.");
+            btn.disabled = false;
+            btn.innerText = "Set this Final Optimized Image for Post";
+        }
+    } catch(e) {
+        alert("Upload error.");
+        btn.disabled = false;
+        btn.innerText = "Set this Final Optimized Image for Post";
+    }
+}
+
+function removeImage() {
+    activeImageElement = new Image();
+    if (cropper) { cropper.destroy(); cropper = null; }
+    document.getElementById('mediaUrl').value = "";
+    document.getElementById('imageFileInput').value = "";
+    document.getElementById('studioControls').classList.add('hidden');
+    document.getElementById('imageReadyBadge').classList.add('hidden');
+    document.getElementById('btnApplyStudio').classList.replace('bg-emerald-600', 'bg-slate-900');
+    document.getElementById('btnApplyStudio').disabled = false;
+    document.getElementById('btnApplyStudio').innerText = "Set this Final Optimized Image for Post";
+    updatePreview();
+}
+
+function toggleSchedulePicker(show) {
+    const picker = document.getElementById('schedulePickerContainer');
+    const submitBtn = document.getElementById('submitBtn');
+    if (show) {
+        picker.classList.remove('hidden');
+        submitBtn.innerText = "📅 Schedule Post";
+        const now = new Date();
+        now.setHours(now.getHours() + 1);
+        document.getElementById('scheduledAt').value = now.toISOString().slice(0, 16);
+    } else {
+        picker.classList.add('hidden');
+        submitBtn.innerText = "🚀 Publish Now";
+    }
+}
+
+function onContentChange() {
+    updatePreview();
+    const text = document.getElementById('postContent').value.trim();
+    const overlayInput = document.getElementById('overlayText');
+    if (!overlayInput.value && text) {
+        overlayInput.value = text.split('\n')[0].substring(0, 60);
+        if (document.getElementById('chkTextOverlay').checked) {
+            renderStudioCanvas();
+        }
+    }
+}
+
+function updatePreview() {
+    const text = document.getElementById('postContent').value;
+    const media = document.getElementById('mediaUrl').value;
+    const previewEl = document.getElementById('previewText');
+    const mediaBox = document.getElementById('previewMediaBox');
+    const previewImg = document.getElementById('previewImg');
+    const countEl = document.getElementById('charCount');
+
+    countEl.innerText = `${text.length} / 3000`;
+    previewEl.innerText = text.trim() ? text : "Your post preview will appear here in real-time as you type...";
+
+    if (media.trim()) {
+        mediaBox.classList.remove('hidden');
+        previewImg.src = media;
+    } else {
+        mediaBox.classList.add('hidden');
+    }
+}
+
+// --- Submit Post ---
+async function handlePostSubmit(e) {
+    e.preventDefault();
+    const alertBox = document.getElementById('statusAlert');
+    const submitBtn = document.getElementById('submitBtn');
+    alertBox.className = "hidden p-3 rounded-lg text-xs font-semibold";
+
+    const content = document.getElementById('postContent').value.trim();
+    const media_url = document.getElementById('mediaUrl').value.trim() || null;
+    const isNow = document.querySelector('input[name="publishType"]:checked').value === 'now';
+    const scheduledAtInput = document.getElementById('scheduledAt').value;
+
+    const channels = [];
+    if (document.getElementById('chkFacebook').checked) channels.push('facebook');
+    if (document.getElementById('chkLinkedin').checked) channels.push('linkedin');
+
+    if (channels.length === 0) {
+        alertBox.className = "p-3 rounded-lg text-xs font-semibold bg-red-50 text-red-700 border border-red-200 block";
+        alertBox.innerText = "Please select at least one channel (Facebook or LinkedIn).";
+        return;
+    }
+
+    let scheduled_at = null;
+    if (!isNow) {
+        if (!scheduledAtInput) {
+            alertBox.className = "p-3 rounded-lg text-xs font-semibold bg-red-50 text-red-700 border border-red-200 block";
+            alertBox.innerText = "Please select a date and time for scheduling.";
+            return;
+        }
+        scheduled_at = new Date(scheduledAtInput).toISOString();
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.innerText = "Processing...";
+
+    try {
+        const res = await fetch(`/api/v1/posts?publish_now=${isNow}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                content,
+                media_url,
+                scheduled_at,
+                target_platforms: channels.join(',')
+            })
+        });
+
+        const data = await res.json();
+        const isFbDemo = {{ 'true' if (fb_channel and fb_channel.platform_account_id.startswith('fb_page_')) else 'false' }};
+        if (res.ok) {
+            if (isNow) {
+                if (channels.includes('facebook') && isFbDemo) {
+                    alertBox.className = "p-3.5 rounded-xl text-xs font-semibold bg-amber-50 text-amber-900 border border-amber-300 block leading-relaxed";
+                    alertBox.innerHTML = "⚠️ <strong>সতর্কতা (Demo Mode):</strong> পোস্টটি টেস্ট সিমুলেশন হিসেবে সেভ হয়েছে, কিন্তু আপনার আসল ফেসবুকে পোস্ট হয়নি কারণ বর্তমানে <strong>Demo Business Page</strong> কানেক্ট রয়েছে। আপনার আসল ফেসবুকে সরাসরি পোস্ট পাঠাতে <a href='/accounts' class='underline font-bold text-blue-700'>Accounts পেজ থেকে Real Facebook Page কানেক্ট করুন</a>।";
+                    submitBtn.disabled = false;
+                    submitBtn.innerText = "🚀 Publish Now";
+                    setTimeout(() => { window.location.href = '/schedule'; }, 5000);
+                    return;
+                } else {
+                    alertBox.className = "p-3 rounded-lg text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 block";
+                    alertBox.innerText = "🎉 আপনার লাইভ ফেসবুক পেজে ছবিসহ পোস্ট সরাসরি সফলভাবে প্রকাশিত হয়েছে!";
+                }
+            } else {
+                alertBox.className = "p-3 rounded-lg text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 block";
+                alertBox.innerText = "📅 Post scheduled successfully!";
+            }
+            setTimeout(() => { window.location.href = '/schedule'; }, 1500);
+        } else {
+            alertBox.className = "p-3 rounded-lg text-xs font-semibold bg-red-50 text-red-700 border border-red-200 block";
+            alertBox.innerText = data.detail || "Failed to create post.";
+            submitBtn.disabled = false;
+            submitBtn.innerText = isNow ? "🚀 Publish Now" : "📅 Schedule Post";
+        }
+    } catch (err) {
+        alertBox.className = "p-3 rounded-lg text-xs font-semibold bg-red-50 text-red-700 border border-red-200 block";
+        alertBox.innerText = "Network error occurred.";
+        submitBtn.disabled = false;
+        submitBtn.innerText = isNow ? "🚀 Publish Now" : "📅 Schedule Post";
+    }
+}
+</script>
+{% endblock %}

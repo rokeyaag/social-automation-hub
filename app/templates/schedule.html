@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+
+{% block title %}Post Queue & History - SocialPulse{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-6">
+
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+            <h2 class="text-xl font-bold text-slate-900">Post Queue & History</h2>
+            <p class="text-xs text-slate-500 mt-0.5">Manage scheduled items, inspect platform delivery logs, and trigger immediate posts</p>
+        </div>
+        <a href="/create-post" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white font-semibold text-xs rounded-xl shadow-md transition-all self-start sm:self-auto">
+            ➕ New Post
+        </a>
+    </div>
+
+    <!-- Posts Feed List -->
+    {% if posts %}
+    <div class="space-y-4">
+        {% for post in posts %}
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    {% if post.status == 'published' %}
+                    <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700">✅ Published</span>
+                    {% elif post.status == 'scheduled' %}
+                    <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-700">⏳ Scheduled</span>
+                    {% elif post.status == 'failed' %}
+                    <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-700">❌ Failed</span>
+                    {% else %}
+                    <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-100 text-slate-700">{{ post.status }}</span>
+                    {% endif %}
+
+                    <span class="text-xs text-slate-400">
+                        {% if post.scheduled_at %}
+                        Due: {{ post.scheduled_at.strftime('%Y-%m-%d %H:%M') }}
+                        {% else %}
+                        Created: {{ post.created_at.strftime('%Y-%m-%d %H:%M') }}
+                        {% endif %}
+                    </span>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    {% if post.status == 'scheduled' %}
+                    <button onclick="publishNow({{ post.id }})" class="px-2.5 py-1 text-xs font-semibold bg-brand-50 text-brand-700 hover:bg-brand-100 rounded-lg">
+                        Publish Now
+                    </button>
+                    {% endif %}
+                    <button onclick="deletePost({{ post.id }})" class="p-1 text-slate-400 hover:text-red-500 rounded">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Content -->
+            <p class="text-sm text-slate-800 leading-relaxed whitespace-pre-wrap">{{ post.content }}</p>
+
+            {% if post.media_url %}
+            <div class="text-xs text-brand-600 truncate bg-slate-50 p-2 rounded-lg border border-slate-100">
+                🔗 <a href="{{ post.media_url }}" target="_blank" class="hover:underline">{{ post.media_url }}</a>
+            </div>
+            {% endif %}
+
+            <!-- Target Channels & Dispatch Logs -->
+            <div class="pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2 text-xs">
+                <div class="flex items-center gap-1.5">
+                    <span class="text-slate-400 font-medium">Targets:</span>
+                    {% if 'facebook' in post.target_platforms %}
+                    <span class="px-2 py-0.5 rounded bg-blue-100 text-blue-700 font-medium">Facebook</span>
+                    {% endif %}
+                    {% if 'linkedin' in post.target_platforms %}
+                    <span class="px-2 py-0.5 rounded bg-sky-100 text-sky-800 font-medium">LinkedIn</span>
+                    {% endif %}
+                </div>
+
+                <!-- Logs summary -->
+                {% if post.dispatch_logs %}
+                <div class="flex items-center gap-2">
+                    {% for log in post.dispatch_logs %}
+                        {% if log.status == 'success' %}
+                            {% if log.platform_post_id and log.platform_post_id.startswith('fb_sim_') %}
+                            <span class="text-[11px] px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-300 font-semibold" title="টেস্ট ডেমো পোস্ট (আসল ফেসবুক পেজে যায় নি)">
+                                {{ log.platform|capitalize }}: ⚠️ Demo Simulation (আসল ফেসবুকে যায়নি)
+                            </span>
+                            {% else %}
+                            <a href="https://www.facebook.com/{{ log.platform_post_id }}" target="_blank" class="text-[11px] px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-300 font-semibold hover:underline" title="ফেসবুকে পোস্টটি দেখুন">
+                                {{ log.platform|capitalize }}: 🟢 Live Post (View on Facebook &rarr;)
+                            </a>
+                            {% endif %}
+                        {% else %}
+                        <span class="text-[11px] px-2.5 py-0.5 rounded-full bg-red-50 text-red-600 border border-red-200" title="{{ log.error_message }}">
+                            {{ log.platform|capitalize }}: ❌ Failed ({{ log.error_message }})
+                        </span>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="bg-white p-12 text-center rounded-2xl border border-slate-200 shadow-sm">
+        <div class="text-4xl mb-3">📭</div>
+        <h3 class="text-sm font-bold text-slate-900">Your post queue is currently empty</h3>
+        <p class="text-xs text-slate-500 mt-1 max-w-sm mx-auto">Create a scheduled post and our background engine will automatically dispatch it at the chosen time.</p>
+        <a href="/create-post" class="mt-4 inline-block px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white font-semibold text-xs rounded-xl shadow-md transition-all">
+            Schedule Your First Post
+        </a>
+    </div>
+    {% endif %}
+
+</div>
+
+<script>
+async function publishNow(postId) {
+    if (!confirm("Do you want to publish this post immediately?")) return;
+    try {
+        const res = await fetch(`/api/v1/posts/${postId}/publish-now`, { method: 'POST' });
+        if (res.ok) window.location.reload();
+        else alert("Failed to publish.");
+    } catch(e) {
+        alert("Network error.");
+    }
+}
+
+async function deletePost(postId) {
+    if (!confirm("Are you sure you want to delete this post?")) return;
+    try {
+        const res = await fetch(`/api/v1/posts/${postId}`, { method: 'DELETE' });
+        if (res.ok) window.location.reload();
+        else alert("Failed to delete.");
+    } catch(e) {
+        alert("Network error.");
+    }
+}
+</script>
+{% endblock %}

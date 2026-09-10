@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - SocialPulse{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto space-y-6">
+
+    <!-- Welcome & Quick Action Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-gradient-to-r from-brand-600 to-indigo-700 p-6 rounded-2xl text-white shadow-lg shadow-brand-500/15">
+        <div>
+            <h2 class="text-xl sm:text-2xl font-bold">Hello, {{ user.full_name or user.email.split('@')[0] }}! 👋</h2>
+            <p class="text-indigo-100 text-xs sm:text-sm mt-1">Your automated social publishing hub is active and running.</p>
+        </div>
+        <div class="flex items-center gap-2">
+            <a href="/create-post" class="px-4 py-2.5 bg-white text-brand-700 hover:bg-indigo-50 font-semibold text-xs sm:text-sm rounded-xl shadow-md transition-all active:scale-95 flex items-center gap-2">
+                <span>➕</span> Create New Post
+            </a>
+        </div>
+    </div>
+
+    <!-- KPI Metric Cards Grid -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+        <!-- Scheduled -->
+        <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-sm">
+            <div class="flex items-center justify-between text-slate-400 mb-2">
+                <span class="text-xs font-semibold uppercase tracking-wider">Scheduled</span>
+                <span class="text-amber-500 text-lg">⏳</span>
+            </div>
+            <div class="text-2xl sm:text-3xl font-bold text-slate-900">{{ scheduled_posts }}</div>
+            <p class="text-[11px] text-slate-400 mt-1">In queue waiting</p>
+        </div>
+
+        <!-- Published -->
+        <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-sm">
+            <div class="flex items-center justify-between text-slate-400 mb-2">
+                <span class="text-xs font-semibold uppercase tracking-wider">Published</span>
+                <span class="text-emerald-500 text-lg">✅</span>
+            </div>
+            <div class="text-2xl sm:text-3xl font-bold text-slate-900">{{ published_posts }}</div>
+            <p class="text-[11px] text-slate-400 mt-1">Sent to channels</p>
+        </div>
+
+        <!-- Total Posts -->
+        <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-sm">
+            <div class="flex items-center justify-between text-slate-400 mb-2">
+                <span class="text-xs font-semibold uppercase tracking-wider">Total</span>
+                <span class="text-indigo-500 text-lg">📊</span>
+            </div>
+            <div class="text-2xl sm:text-3xl font-bold text-slate-900">{{ total_posts }}</div>
+            <p class="text-[11px] text-slate-400 mt-1">Created lifetime</p>
+        </div>
+
+        <!-- Connected Accounts -->
+        <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-sm">
+            <div class="flex items-center justify-between text-slate-400 mb-2">
+                <span class="text-xs font-semibold uppercase tracking-wider">Accounts</span>
+                <span class="text-blue-500 text-lg">🔗</span>
+            </div>
+            <div class="text-2xl sm:text-3xl font-bold text-slate-900">{{ accounts|length }}</div>
+            <p class="text-[11px] text-slate-400 mt-1">
+                <a href="/accounts" class="text-brand-600 hover:underline">Manage accounts &rarr;</a>
+            </p>
+        </div>
+    </div>
+
+    <!-- Active Connected Accounts Alert / Status -->
+    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+        <div class="flex items-center justify-between mb-3">
+            <h3 class="text-sm font-bold text-slate-900 uppercase tracking-wide">Connected Social Channels</h3>
+            <a href="/accounts" class="text-xs text-brand-600 font-semibold hover:underline">Add or Reconnect</a>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <!-- Facebook Card -->
+            {% set fb_account = accounts|selectattr("platform", "equalto", "facebook")|first %}
+            <div class="flex items-center justify-between p-3.5 rounded-xl border {% if fb_account %}border-blue-200 bg-blue-50/50{% else %}border-slate-200 bg-slate-50{% endif %}">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-lg bg-facebook text-white flex items-center justify-center font-bold text-base">f</div>
+                    <div>
+                        <div class="text-xs font-bold text-slate-900">Facebook Page</div>
+                        <div class="text-[11px] {% if fb_account %}text-blue-700 font-medium{% else %}text-slate-400{% endif %}">
+                            {{ fb_account.account_name if fb_account else "Not connected yet" }}
+                        </div>
+                    </div>
+                </div>
+                {% if fb_account %}
+                <span class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-semibold">Active</span>
+                {% else %}
+                <a href="/accounts" class="text-xs px-2.5 py-1 bg-white border border-slate-200 text-slate-700 font-medium rounded-lg hover:bg-slate-50">Connect</a>
+                {% endif %}
+            </div>
+
+            <!-- LinkedIn Card -->
+            {% set li_account = accounts|selectattr("platform", "equalto", "linkedin")|first %}
+            <div class="flex items-center justify-between p-3.5 rounded-xl border {% if li_account %}border-blue-200 bg-blue-50/50{% else %}border-slate-200 bg-slate-50{% endif %}">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-lg bg-linkedin text-white flex items-center justify-center font-bold text-sm">in</div>
+                    <div>
+                        <div class="text-xs font-bold text-slate-900">LinkedIn Profile/Page</div>
+                        <div class="text-[11px] {% if li_account %}text-blue-700 font-medium{% else %}text-slate-400{% endif %}">
+                            {{ li_account.account_name if li_account else "Not connected yet" }}
+                        </div>
+                    </div>
+                </div>
+                {% if li_account %}
+                <span class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-semibold">Active</span>
+                {% else %}
+                <a href="/accounts" class="text-xs px-2.5 py-1 bg-white border border-slate-200 text-slate-700 font-medium rounded-lg hover:bg-slate-50">Connect</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Posts Section -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="flex items-center justify-between p-5 border-b border-slate-100">
+            <h3 class="text-sm font-bold text-slate-900 uppercase tracking-wide">Recent Posts</h3>
+            <a href="/schedule" class="text-xs text-brand-600 font-semibold hover:underline">View All &rarr;</a>
+        </div>
+
+        {% if recent_posts %}
+        <div class="divide-y divide-slate-100">
+            {% for post in recent_posts %}
+            <div class="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-50 transition-colors">
+                <div class="space-y-1.5 max-w-xl">
+                    <div class="flex items-center gap-2">
+                        {% if post.status == 'published' %}
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700">Published</span>
+                        {% elif post.status == 'scheduled' %}
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-700">Scheduled</span>
+                        {% elif post.status == 'failed' %}
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-100 text-red-700">Failed</span>
+                        {% else %}
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600">{{ post.status }}</span>
+                        {% endif %}
+                        <span class="text-[11px] text-slate-400">{{ post.created_at.strftime('%b %d, %H:%M') }}</span>
+                    </div>
+                    <p class="text-sm text-slate-800 line-clamp-2 font-normal">{{ post.content }}</p>
+                    <div class="flex items-center gap-2 text-[11px] text-slate-500 font-medium">
+                        <span>Channels:</span>
+                        {% if 'facebook' in post.target_platforms %}
+                        <span class="px-1.5 py-0.5 rounded bg-blue-100 text-blue-700 text-[10px]">Facebook</span>
+                        {% endif %}
+                        {% if 'linkedin' in post.target_platforms %}
+                        <span class="px-1.5 py-0.5 rounded bg-sky-100 text-sky-800 text-[10px]">LinkedIn</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2 self-end sm:self-center shrink-0">
+                    {% if post.status == 'scheduled' %}
+                    <button onclick="publishNow({{ post.id }})" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-brand-50 text-brand-700 hover:bg-brand-100 transition-colors">
+                        Post Now
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="p-8 text-center text-slate-400 text-xs">
+            No posts created yet. Click <a href="/create-post" class="text-brand-600 font-semibold underline">Create New Post</a> to schedule your first post!
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+
+<script>
+async function publishNow(postId) {
+    if (!confirm("Are you sure you want to publish this post right now?")) return;
+    try {
+        const res = await fetch(`/api/v1/posts/${postId}/publish-now`, { method: 'POST' });
+        if (res.ok) {
+            window.location.reload();
+        } else {
+            alert("Failed to publish post.");
+        }
+    } catch (e) {
+        alert("Network error.");
+    }
+}
+</script>
+{% endblock %}

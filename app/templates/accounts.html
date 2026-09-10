@@ -1,0 +1,328 @@
+{% extends "base.html" %}
+
+{% block title %}Social Accounts - SocialPulse{% endblock %}
+
+{% block content %}
+<div x-data="{
+    fbModalOpen: false,
+    pageId: '',
+    accessToken: '',
+    pageName: '',
+    loading: false,
+    errorMessage: '',
+    successMessage: '',
+    async submitFbConnect() {
+        if (!this.pageId.trim() || !this.accessToken.trim()) {
+            this.errorMessage = 'Page ID এবং Page Access Token উভয়ই পূরণ করুন।';
+            return;
+        }
+        this.loading = true;
+        this.errorMessage = '';
+        this.successMessage = '';
+        try {
+            const res = await fetch('/api/v1/oauth/facebook/manual-connect', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    page_id: this.pageId.trim(),
+                    access_token: this.accessToken.trim(),
+                    page_name: this.pageName.trim() || null
+                })
+            });
+            const data = await res.json();
+            if (res.ok && data.success) {
+                this.successMessage = data.message || 'Facebook Page সফলভাবে কানেক্ট হয়েছে!';
+                setTimeout(() => { window.location.href = '/accounts?connected=facebook_live'; }, 1200);
+            } else {
+                this.errorMessage = data.detail || data.error || 'Meta API যাচাইকরণে ব্যর্থ হয়েছে। দয়া করে সঠিক Page ID ও Token দিন।';
+            }
+        } catch(e) {
+            this.errorMessage = 'সার্ভারের সাথে সংযোগে ত্রুটি: ' + e.message;
+        } finally {
+            this.loading = false;
+        }
+    }
+}" class="max-w-4xl mx-auto space-y-6">
+
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+        <div>
+            <h2 class="text-xl font-bold text-slate-900">Connected Accounts & Channels</h2>
+            <p class="text-xs text-slate-500 mt-0.5">আপনার রিয়েল ফেসবুক পেজ ও অন্যান্য চ্যানেল যুক্ত করে অটোমেটিক পোস্ট করুন</p>
+        </div>
+        <button @click="fbModalOpen = true" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-facebook hover:bg-blue-700 text-white text-xs font-bold shadow-md shadow-blue-500/20 transition-all self-start sm:self-auto">
+            <span>➕</span> Connect Real Facebook Page
+        </button>
+    </div>
+
+    <!-- Notice / Guidance banner about Meta policy -->
+    <div class="p-4 rounded-2xl bg-blue-50/80 border border-blue-200/80 text-blue-900 text-xs space-y-1.5 shadow-sm">
+        <div class="flex items-center gap-2 font-bold text-blue-800">
+            <span class="text-base">ℹ️</span> ফেসবুক পোস্টিং সম্পর্কে গুরুত্বপূর্ণ তথ্য (Meta API Rules):
+        </div>
+        <p class="text-blue-700 leading-relaxed">
+            Meta (Facebook) এর বর্তমান সিকিউরিটি পলিসি অনুযায়ী কোনো থার্ড-পার্টি অ্যাপ থেকে সরাসরি পার্সোনাল প্রোফাইলে পোস্ট করা যায় না। অটোমেশনের মাধ্যমে ছবিসহ সরাসরি পোস্ট করার জন্য আপনার একটি <strong>Facebook Page</strong> (ব্যবসা, শপ বা কনটেন্ট ক্রিয়েটর পেইজ) থাকতে হবে। নিচে আপনার Facebook Page ID ও Access Token যুক্ত করলেই পোস্ট সরাসরি আপনার পেজে প্রকাশিত হবে।
+        </p>
+    </div>
+
+    <!-- Connection Cards Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+        <!-- Facebook Integration Card -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between space-y-4">
+            <div class="flex items-start justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 rounded-xl bg-facebook text-white flex items-center justify-center font-bold text-xl shadow-md shadow-blue-500/20">
+                        f
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-bold text-slate-900">Facebook Page</h3>
+                        <p class="text-xs text-slate-400">Meta Graph API &bull; Live Feed & Photo Post</p>
+                    </div>
+                </div>
+                {% set fb_acc = None %}
+                {% for acc in accounts %}
+                    {% if acc.platform == 'facebook' %}
+                        {% set fb_acc = acc %}
+                    {% endif %}
+                {% endfor %}
+
+                {% if fb_acc %}
+                    {% if fb_acc.platform_account_id.startswith('fb_page_') %}
+                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">⚠️ Demo Mode</span>
+                    {% else %}
+                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700">🟢 Live Page</span>
+                    {% endif %}
+                {% else %}
+                <span class="px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-slate-100 text-slate-500">Not Linked</span>
+                {% endif %}
+            </div>
+
+            <div>
+                {% if fb_acc and not fb_acc.platform_account_id.startswith('fb_page_') %}
+                <p class="text-xs text-emerald-800 bg-emerald-50 p-2.5 rounded-xl border border-emerald-200 leading-relaxed font-medium">
+                    ✅ আপনার লাইভ ফেসবুক পেজ <strong>{{ fb_acc.account_name }}</strong> যুক্ত আছে। পোস্ট সরাসরি আপনার এই পেজে যাবে।
+                </p>
+                {% elif fb_acc and fb_acc.platform_account_id.startswith('fb_page_') %}
+                <p class="text-xs text-amber-800 bg-amber-50 p-2.5 rounded-xl border border-amber-200 leading-relaxed">
+                    ⚠️ বর্তমানে <strong>Demo Simulation</strong> সক্রিয় আছে। আসল ফেসবুকে পোস্ট পাঠানোর জন্য নিচের বাটনে ক্লিক করে আসল Page ID ও Token দিন।
+                </p>
+                {% else %}
+                <p class="text-xs text-slate-600 leading-relaxed">
+                    আপনার আসল ফেসবুক পেজ যুক্ত করুন যাতে ক্রিয়েট পোস্ট থেকে অটোমেটিক ছবিসহ পোস্ট সরাসরি আপনার ফেসবুক পেজে পাবলিশ হয়ে যায়।
+                </p>
+                {% endif %}
+            </div>
+
+            <div class="flex flex-wrap items-center gap-2 pt-1">
+                <button type="button" @click="fbModalOpen = true" class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-facebook hover:bg-blue-700 text-white text-xs font-bold shadow-md shadow-blue-500/20 transition-all">
+                    <span>🔗</span> {% if fb_acc %}Switch / Update Real Page{% else %}Connect Real Facebook Page{% endif %}
+                </button>
+                <a href="/api/v1/oauth/facebook/simulate-callback" class="inline-flex items-center gap-1 px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 text-[11px] font-medium transition-colors" title="টেস্ট করার জন্য ডেমো অ্যাকাউন্ট">
+                    ⚡ Demo Test
+                </a>
+            </div>
+        </div>
+
+        <!-- LinkedIn Integration Card -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between space-y-4">
+            <div class="flex items-start justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 rounded-xl bg-linkedin text-white flex items-center justify-center font-bold text-xl shadow-md shadow-blue-600/20">
+                        in
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-bold text-slate-900">LinkedIn</h3>
+                        <p class="text-xs text-slate-400">LinkedIn REST API &bull; Profile/Page</p>
+                    </div>
+                </div>
+                {% if has_linkedin %}
+                <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-700">Connected</span>
+                {% else %}
+                <span class="px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-slate-100 text-slate-500">Not Linked</span>
+                {% endif %}
+            </div>
+
+            <p class="text-xs text-slate-600 leading-relaxed">
+                Connect your personal profile or company page to share professional content, articles, and scheduled updates.
+            </p>
+
+            <div>
+                {% if has_linkedin %}
+                <a href="/api/v1/oauth/linkedin/connect" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-colors">
+                    🔄 Reconnect / Switch Account
+                </a>
+                {% else %}
+                <a href="/api/v1/oauth/linkedin/connect" class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-linkedin hover:bg-sky-700 text-white text-xs font-semibold shadow-md shadow-sky-500/20 transition-all">
+                    Connect LinkedIn
+                </a>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Connected Accounts Detailed List -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="p-5 border-b border-slate-100 flex items-center justify-between">
+            <h3 class="text-sm font-bold text-slate-900 uppercase tracking-wide">Active Account Tokens</h3>
+            <span class="text-[11px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-medium">🔒 AES-256 Fernet Encrypted</span>
+        </div>
+
+        {% if accounts %}
+        <div class="divide-y divide-slate-100">
+            {% for acc in accounts %}
+            <div class="p-4 sm:p-5 flex items-center justify-between hover:bg-slate-50 transition-colors">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl {% if acc.platform == 'facebook' %}bg-facebook text-white{% else %}bg-linkedin text-white{% endif %} flex items-center justify-center font-bold text-sm">
+                        {{ 'f' if acc.platform == 'facebook' else 'in' }}
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-sm font-bold text-slate-900">{{ acc.account_name }}</span>
+                            {% if acc.platform == 'facebook' %}
+                                {% if acc.platform_account_id.startswith('fb_page_') %}
+                                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">⚠️ Demo Account</span>
+                                {% else %}
+                                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">🟢 Live Page</span>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                        <div class="text-xs text-slate-400 mt-0.5">
+                            ID: <code class="font-mono text-slate-600 font-semibold">{{ acc.platform_account_id }}</code> &bull; Type: {{ acc.account_type|capitalize }}
+                        </div>
+                    </div>
+                </div>
+
+                <button onclick="disconnectAccount({{ acc.id }})" class="text-xs font-medium text-red-600 hover:text-red-700 px-3 py-1.5 rounded-lg border border-red-200 hover:bg-red-50 transition-colors">
+                    Disconnect
+                </button>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="p-8 text-center text-slate-400 text-xs">
+            এখনও কোনো অ্যাকাউন্ট যুক্ত করা হয়নি। উপরের বাটন থেকে আপনার ফেসবুক পেজ যুক্ত করুন।
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Connect Real Facebook Page Modal -->
+    <div x-show="fbModalOpen"
+         x-transition:enter="transition ease-out duration-200"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-150"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+         style="display: none;">
+
+        <div @click.away="if (!loading) fbModalOpen = false"
+             class="bg-white rounded-2xl shadow-2xl max-w-xl w-full border border-slate-200 overflow-hidden flex flex-col max-h-[90vh]">
+
+            <!-- Modal Header -->
+            <div class="p-5 bg-gradient-to-r from-facebook to-blue-700 text-white flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center text-white font-bold text-lg">
+                        f
+                    </div>
+                    <div>
+                        <h3 class="text-base font-bold">Connect Real Facebook Page</h3>
+                        <p class="text-xs text-blue-100">আপনার আসল ফেসবুক পেজের সাথে কানেক্ট করুন</p>
+                    </div>
+                </div>
+                <button type="button" @click="if (!loading) fbModalOpen = false" class="text-white/80 hover:text-white text-xl font-bold p-1">&times;</button>
+            </div>
+
+            <!-- Modal Body (Scrollable) -->
+            <div class="p-6 space-y-5 overflow-y-auto">
+
+                <!-- Step-by-Step Instructions -->
+                <div class="p-4 rounded-xl bg-blue-50 border border-blue-200 text-xs text-blue-900 space-y-2">
+                    <div class="font-bold flex items-center gap-1.5 text-blue-800">
+                        <span>📖</span> পেজ আইডি ও এক্সেস টোকেন পাওয়ার সহজ উপায়:
+                    </div>
+                    <ol class="list-decimal list-inside space-y-1 text-slate-700 text-[11px] leading-relaxed">
+                        <li>ব্রাউজারে <a href="https://developers.facebook.com/tools/explorer/" target="_blank" class="text-blue-600 font-bold underline">Meta Graph API Explorer</a> ওপেন করুন।</li>
+                        <li><strong>User or Page</strong> ড্রপডাউনে আপনার <strong>Facebook Page</strong> সিলেক্ট করুন।</li>
+                        <li>Permissions এ <code>pages_show_list</code>, <code>pages_read_engagement</code>, <code>pages_manage_posts</code> সিলেক্ট করুন।</li>
+                        <li><strong>Generate Access Token</strong> বাটনে ক্লিক করে টোকেনটি কপি করে নিচের ঘরে পেস্ট করুন।</li>
+                        <li>আপনার পেজের <strong>Page ID</strong> পেজ সেটিংস &rarr; About সেকশন থেকে কপি করে দিন।</li>
+                    </ol>
+                </div>
+
+                <!-- Error / Success Alerts -->
+                <div x-show="errorMessage" class="p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-medium leading-relaxed" style="display: none;">
+                    <strong>❌ ত্রুটি:</strong> <span x-text="errorMessage"></span>
+                </div>
+
+                <div x-show="successMessage" class="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold" style="display: none;">
+                    <span x-text="successMessage"></span>
+                </div>
+
+                <!-- Input Form -->
+                <div class="space-y-4 text-xs">
+                    <div>
+                        <label class="block font-bold text-slate-800 mb-1">
+                            Facebook Page ID <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" x-model="pageId" placeholder="যেমন: 104829104928173"
+                            class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-facebook focus:border-transparent font-mono text-xs">
+                        <p class="text-[10px] text-slate-400 mt-1">আপনার ফেসবুক পেজের সংখ্যাসূচক আইডি (Numeric Page ID)</p>
+                    </div>
+
+                    <div>
+                        <label class="block font-bold text-slate-800 mb-1">
+                            Page Access Token <span class="text-red-500">*</span>
+                        </label>
+                        <textarea x-model="accessToken" rows="3" placeholder="EAAB... দিয়ে শুরু হওয়া দীর্ঘ টোকেনটি এখানে পেস্ট করুন"
+                            class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-facebook focus:border-transparent font-mono text-xs leading-relaxed"></textarea>
+                        <p class="text-[10px] text-slate-400 mt-1">টোকেনটি ডেটাবেজে AES-256 Fernet এনক্রিপশন দ্বারা সম্পূর্ণ নিরাপদে সংরক্ষিত থাকবে।</p>
+                    </div>
+
+                    <div>
+                        <label class="block font-bold text-slate-800 mb-1">
+                            Page Name (ঐচ্ছিক)
+                        </label>
+                        <input type="text" x-model="pageName" placeholder="খালি রাখলে স্বয়ংক্রিয়ভাবে মেটা থেকে পেজের নাম আনা হবে"
+                            class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-facebook focus:border-transparent text-xs">
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="p-4 bg-slate-50 border-t border-slate-200 flex items-center justify-end gap-3">
+                <button type="button" @click="if (!loading) fbModalOpen = false"
+                    class="px-4 py-2 rounded-xl text-xs font-medium text-slate-600 hover:bg-slate-200 transition-colors">
+                    বাতিল (Cancel)
+                </button>
+                <button type="button" @click="submitFbConnect()" :disabled="loading"
+                    class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-facebook hover:bg-blue-700 disabled:opacity-50 text-white text-xs font-bold shadow-md shadow-blue-500/20 transition-all">
+                    <svg x-show="loading" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span x-text="loading ? 'যাচাই করা হচ্ছে (Verifying)...' : 'যাচাই ও সংযুক্ত করুন (Verify & Connect)'"></span>
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+<script>
+async function disconnectAccount(accId) {
+    if (!confirm("Are you sure you want to disconnect this account? Scheduled posts targeting this account will fail until reconnected.")) return;
+    try {
+        const res = await fetch(`/api/v1/oauth/accounts/${accId}`, { method: 'DELETE' });
+        if (res.ok) window.location.reload();
+        else alert("Failed to disconnect account.");
+    } catch(e) {
+        alert("Network error.");
+    }
+}
+</script>
+{% endblock %}
+

@@ -1,0 +1,37 @@
+﻿# Python Bytecode & Cache
+__pycache__/
+*.py[cod]
+*.class
+*.so
+.pytest_cache/
+
+# Environments & Dependencies
+env/
+venv/
+.venv/
+ENV/
+
+# Database & SQLite
+*.db
+*.sqlite3
+automation.db
+
+# Secrets & Environment Configurations
+.env
+
+# Uploads & Temp Files
+app/static/uploads/*
+!app/static/uploads/.gitkeep
+tmp/
+temp/
+
+# rembg & AI model downloads
+.u2net/
+
+# IDE & Editor Configs
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db

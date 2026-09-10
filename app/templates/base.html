@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>{% block title %}SocialPulse Hub{% endblock %} - Social Media Automation</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                        },
+                        facebook: '#1877F2',
+                        linkedin: '#0A66C2'
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Alpine.js for lightweight UI state -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <style>
+        /* Touch optimization for mobile buttons */
+        button, a, input, select, textarea {
+            touch-action: manipulation;
+        }
+    </style>
+</head>
+<body class="h-full flex flex-col md:flex-row text-slate-800 antialiased selection:bg-brand-500 selection:text-white">
+
+    {% if user %}
+    <!-- Desktop Sidebar (Hidden on Mobile) -->
+    <aside class="hidden md:flex flex-col w-64 bg-white border-r border-slate-200 p-5 shrink-0 justify-between">
+        <div>
+            <!-- Brand -->
+            <div class="flex items-center gap-3 px-2 mb-8">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-400 flex items-center justify-center text-white font-bold shadow-md shadow-brand-500/20">
+                    ⚡
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg leading-tight text-slate-900">SocialPulse</h1>
+                    <span class="text-xs text-slate-400 font-medium tracking-wide uppercase">Automation Hub</span>
+                </div>
+            </div>
+
+            <!-- Nav Links -->
+            <nav class="space-y-1.5 text-sm font-medium">
+                <a href="/dashboard" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-700 hover:bg-slate-100 hover:text-slate-900 transition-colors">
+                    <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                    Dashboard
+                </a>
+                <a href="/create-post" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-700 hover:bg-slate-100 hover:text-slate-900 transition-colors">
+                    <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Create Post
+                </a>
+                <a href="/schedule" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-700 hover:bg-slate-100 hover:text-slate-900 transition-colors">
+                    <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    Post Queue
+                </a>
+                <a href="/accounts" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-700 hover:bg-slate-100 hover:text-slate-900 transition-colors">
+                    <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+                    Social Accounts
+                </a>
+            </nav>
+        </div>
+
+        <!-- User Profile & Logout -->
+        <div class="pt-4 border-t border-slate-200">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3 truncate">
+                    <div class="w-8 h-8 rounded-full bg-brand-100 text-brand-700 flex items-center justify-center font-bold text-xs uppercase">
+                        {{ user.email[0] }}
+                    </div>
+                    <div class="truncate">
+                        <p class="text-sm font-semibold text-slate-900 truncate">{{ user.full_name or user.email }}</p>
+                        <p class="text-xs text-slate-400 truncate">{{ user.email }}</p>
+                    </div>
+                </div>
+                <button onclick="handleLogout()" title="Logout" class="p-1.5 text-slate-400 hover:text-red-500 transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Top Mobile Header -->
+    <header class="md:hidden flex items-center justify-between px-4 py-3 bg-white border-b border-slate-200 shrink-0 sticky top-0 z-40">
+        <div class="flex items-center gap-2">
+            <div class="w-7 h-7 rounded-lg bg-gradient-to-tr from-brand-600 to-indigo-400 flex items-center justify-center text-white font-bold text-sm">
+                ⚡
+            </div>
+            <span class="font-bold text-base text-slate-900">SocialPulse</span>
+        </div>
+        <div class="flex items-center gap-2">
+            <span class="text-xs bg-slate-100 text-slate-600 font-medium px-2 py-1 rounded-full">{{ user.email.split('@')[0] }}</span>
+            <button onclick="handleLogout()" class="p-1.5 text-slate-400 hover:text-red-500">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+            </button>
+        </div>
+    </header>
+    {% endif %}
+
+    <!-- Main Dynamic Content Container -->
+    <main class="flex-1 overflow-y-auto px-4 py-6 md:p-8 {% if user %}pb-24 md:pb-8{% endif %}">
+        {% block content %}{% endblock %}
+    </main>
+
+    {% if user %}
+    <!-- Bottom Mobile Navigation Bar (Always Visible on Mobile) -->
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-slate-200 px-4 py-2 flex justify-around items-center shadow-lg">
+        <a href="/dashboard" class="flex flex-col items-center gap-0.5 text-slate-600 hover:text-brand-600 focus:text-brand-600">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+            <span class="text-[10px] font-medium">Home</span>
+        </a>
+        <a href="/create-post" class="flex flex-col items-center gap-0.5 text-slate-600 hover:text-brand-600 focus:text-brand-600">
+            <div class="w-9 h-9 -mt-3 rounded-full bg-brand-600 text-white flex items-center justify-center shadow-md shadow-brand-500/40">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            </div>
+            <span class="text-[10px] font-medium">Post</span>
+        </a>
+        <a href="/schedule" class="flex flex-col items-center gap-0.5 text-slate-600 hover:text-brand-600 focus:text-brand-600">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <span class="text-[10px] font-medium">Queue</span>
+        </a>
+        <a href="/accounts" class="flex flex-col items-center gap-0.5 text-slate-600 hover:text-brand-600 focus:text-brand-600">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+            <span class="text-[10px] font-medium">Accounts</span>
+        </a>
+    </nav>
+    {% endif %}
+
+    <script>
+        async function handleLogout() {
+            try {
+                await fetch('/api/v1/auth/logout', { method: 'POST' });
+                window.location.href = '/login';
+            } catch (err) {
+                window.location.href = '/login';
+            }
+        }
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>
